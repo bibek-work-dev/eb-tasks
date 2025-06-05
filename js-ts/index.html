@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kanban-Board</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="container" id="container">
+      <div class="container-heading" id="container-heading">
+        <h1>Kanban Board</h1>
+        <!-- <p>Drag and Drop Tasks to Organize your workflows</p> -->
+      </div>
+
+      <form action="" class="container-form" id="container-form">
+        <input
+          type="text"
+          placeholder="Type your tasks here"
+          id="container-form-input"
+        />
+        <button type="submit" id="container-form-btn">Add Task</button>
+      </form>
+
+      <!-- <div>
+        <h1>
+          Statistics
+          <div></div>
+        </h1>
+      </div> -->
+
+      <div class="container-tasks">
+        <div class="container-tasks-todo">
+          <h1>To Do</h1>
+          <ul id="container-tasks-todo-display"></ul>
+        </div>
+        <div class="container-tasks-doing">
+          <h1>Doing</h1>
+          <ul id="container-tasks-doing-display"></ul>
+        </div>
+        <div class="container-tasks-done">
+          <h1>Done</h1>
+          <ul id="container-tasks-done-display"></ul>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./script.js"></script>
+  </body>
+</html>

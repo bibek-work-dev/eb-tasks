@@ -1,0 +1,20 @@
+Task: Drag-and-Drop Kanban Board (ToDo, Doing Done)
+Objective
+Build a Kanban Board using TypeScript and plain JavaScript (DOM APIs) with the following columns:
+
+ToDo
+Doing
+Done
+
+Users should be able to:
+Add new tasks
+Drag tasks between columns
+See tasks update live across columns
+
+
+
+What You Will Learn
+Strong typing with TypeScript
+Manual DOM manipulation (without frameworks)
+HTML Drag and Drop API
+Clean architecture with separation of logic and view
