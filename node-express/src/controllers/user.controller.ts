@@ -39,7 +39,7 @@ export const loginController: RequestHandler = async (
 ) => {
   try {
     const { email, password } = req.body;
-    const user = await userService.loginService({ email, password })
+    const user = await userService.loginService({ email, password });
     console.log("user", user);
     res.status(200).json({
       success: true,
@@ -82,7 +82,7 @@ export const getMeController: RequestHandler = async (
     const userId = req.user?.userId;
     const user = await userService.getMeService(userId);
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
@@ -109,7 +109,7 @@ export const changePasswordController: RequestHandler = async (
   next: NextFunction
 ) => {
   try {
-    const result = await 
+    const result = await userService.changePasswordService();
   } catch (error: any) {
     next(error);
   }

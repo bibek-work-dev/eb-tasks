@@ -128,6 +128,8 @@ export const logoutService = async () => {
   return true;
 };
 
+export const changePasswordService = async () => {};
+
 export const forgotPasswordService = async (email: string) => {
   const user = await UserModel.findOne({ email: email });
   if (!user) throw new NotFoundError("No such user found");

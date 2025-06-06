@@ -2,8 +2,10 @@ import express from "express";
 import * as userController from "../controllers/user.controller";
 // import { zodValidation } from "../middlewares/zodValidation";
 import {
+  forgotPasswordSchema,
   loginSchema,
   registerSchema,
+  resetPasswordSchema,
   verifyEmailSchema,
 } from "../utils/validationSchemas";
 import { zodValidate } from "../middlewares/zodValidation";
@@ -32,9 +34,17 @@ userRoutes.get("/get-me", requireAuth, userController.getMeController);
 
 userRoutes.put("/update-profile", userController.updateProfileController);
 
-userRoutes.post("/forgot-password", userController.forgotPasswordController);
+userRoutes.post(
+  "/forgot-password",
+  zodValidate(forgotPasswordSchema),
+  userController.forgotPasswordController
+);
 
-userRoutes.post("/reset-password", userController.resetPasswordController);
+userRoutes.post(
+  "/reset-password",
+  zodValidate(resetPasswordSchema),
+  userController.resetPasswordController
+);
 
 userRoutes.patch(
   "/change-password",
