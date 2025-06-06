@@ -7,7 +7,10 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from "../utils/ErrorHandler";
-import { sendVerficationEmail } from "../utils/sendEmail";
+import {
+  sendResetPasswordEmail,
+  sendVerficationEmail,
+} from "../utils/sendEmail";
 import jwt from "jsonwebtoken";
 
 interface registerInput {
@@ -110,4 +113,49 @@ export const verifyEmailService = async (email: string, code: string) => {
   user.verficationDate = undefined;
 
   await user.save();
+};
+
+export const getMeService = async (userId: string) => {
+  const user = await UserModel.findById(userId);
+  if (!user) throw new NotFoundError("User not found");
+  return user;
+};
+
+export const updateProfileService = async () => {};
+
+export const logoutService = async () => {
+  // client le garxa afai remove
+  return true;
+};
+
+export const forgotPasswordService = async (email: string) => {
+  const user = await UserModel.findOne({ email: email });
+  if (!user) throw new NotFoundError("No such user found");
+  const resetToken = getRandomNumber();
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordExpiresIn = getDateFifteenMinutesFromNow();
+  await user.save();
+
+  await sendResetPasswordEmail(email, resetToken);
+  return true;
+};
+
+export const resetPasswordService = async (
+  newPassword: string,
+  confirmPassword: string,
+  code: string,
+  userId: string
+) => {
+  const user = await UserModel.findOne({
+    resetPasswordToken: code,
+    _id: userId,
+  });
+  if (!user) throw new Error("No such user found");
+  const hashedPassword = await bcryptjs.hash(newPassword, 10);
+  await UserModel.findByIdAndUpdate(
+    userId,
+    { password: hashedPassword },
+    { new: true }
+  );
+  return true;
 };

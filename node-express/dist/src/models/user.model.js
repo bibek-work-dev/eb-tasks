@@ -44,6 +44,8 @@ const userSchema = new mongoose_1.Schema({
     bio: { type: String, default: "" },
     verificationToken: { type: String },
     verficationDate: { type: Date },
+    resetPasswordToken: { type: String },
+    resetPasswordExpiresIn: { type: Date },
 }, { timestamps: true });
 const UserModel = mongoose_1.default.model("User", userSchema);
 exports.default = UserModel;

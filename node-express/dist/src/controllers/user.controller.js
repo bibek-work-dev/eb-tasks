@@ -42,7 +42,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyEmailController = exports.loginController = exports.registerController = void 0;
+exports.logoutController = exports.resetPasswordController = exports.checkForgotPasswordTokenController = exports.forgotPasswordController = exports.updateProfileController = exports.getMeController = exports.verifyEmailController = exports.loginController = exports.registerController = void 0;
 const userService = __importStar(require("../services/user.service"));
 const registerController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -92,6 +92,7 @@ const verifyEmailController = (req, res, next) => __awaiter(void 0, void 0, void
         const result = yield userService.verifyEmailService(email, code);
         res.status(201).json({
             success: true,
+            result,
             message: "You are now successfully verified. You can access the resources now",
         });
     }
@@ -101,3 +102,79 @@ const verifyEmailController = (req, res, next) => __awaiter(void 0, void 0, void
     }
 });
 exports.verifyEmailController = verifyEmailController;
+const getMeController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+    }
+    catch (error) { }
+});
+exports.getMeController = getMeController;
+const updateProfileController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = yield userService.updateProfileService();
+        res.status(201).json({
+            success: true,
+            data: result,
+            message: "The email has been successfully sent",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.updateProfileController = updateProfileController;
+const forgotPasswordController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email } = req.body;
+        yield userService.forgotPasswordService(email);
+        res
+            .status(201)
+            .json({ success: true, message: "The email has been successfully sent" });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.forgotPasswordController = forgotPasswordController;
+const checkForgotPasswordTokenController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { token, email } = req.body;
+        const result = yield userService.checkForgotPasswordTokenService(email, token);
+        res.status(200).json({
+            success: true,
+            message: "Token verfied. you can change your password now",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.checkForgotPasswordTokenController = checkForgotPasswordTokenController;
+const resetPasswordController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.userId;
+        const { newPassword, confirmPassword } = req.body;
+        const result = yield userService.resetPasswordService(newPassword, confirmPassword, userId);
+        res.status(201).json({
+            success: true,
+            message: "Your password have been successfully changed",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.resetPasswordController = resetPasswordController;
+const logoutController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = yield userService.logoutService();
+        res.status(200).json({
+            success: true,
+            data: null,
+            message: "You have been successfully logged Out.",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.logoutController = logoutController;

@@ -7,6 +7,7 @@ import {
   verifyEmailSchema,
 } from "../utils/validationSchemas";
 import { zodValidate } from "../middlewares/zodValidation";
+import requireAuth from "../middlewares/requireAuth";
 
 const userRoutes = express.Router();
 
@@ -26,5 +27,21 @@ userRoutes.post(
   zodValidate(verifyEmailSchema),
   userController.verifyEmailController
 );
+
+userRoutes.get("/get-me", requireAuth, userController.getMeController);
+
+userRoutes.put("/update-profile", userController.updateProfileController);
+
+userRoutes.post("/forgot-password", userController.forgotPasswordController);
+
+userRoutes.post("/reset-password", userController.resetPasswordController);
+
+userRoutes.patch(
+  "/change-password",
+  requireAuth,
+  userController.changePasswordController
+);
+
+userRoutes.get("/logout", userController.logoutController);
 
 export default userRoutes;

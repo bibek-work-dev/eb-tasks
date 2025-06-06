@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyEmailService = exports.loginService = exports.registerService = void 0;
+exports.resetPasswordService = exports.checkForgotPasswordTokenService = exports.forgotPasswordService = exports.logoutService = exports.updateProfileService = exports.getMeService = exports.verifyEmailService = exports.loginService = exports.registerService = void 0;
 const user_model_1 = __importDefault(require("../models/user.model"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const ErrorHandler_1 = require("../utils/ErrorHandler");
@@ -89,3 +89,43 @@ const verifyEmailService = (email, code) => __awaiter(void 0, void 0, void 0, fu
     yield user.save();
 });
 exports.verifyEmailService = verifyEmailService;
+const getMeService = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield user_model_1.default.findById(userId);
+    if (!user)
+        throw new ErrorHandler_1.NotFoundError("User not found");
+    return user;
+});
+exports.getMeService = getMeService;
+const updateProfileService = () => __awaiter(void 0, void 0, void 0, function* () { });
+exports.updateProfileService = updateProfileService;
+const logoutService = () => __awaiter(void 0, void 0, void 0, function* () {
+    // client le garxa afai remove
+    return true;
+});
+exports.logoutService = logoutService;
+const forgotPasswordService = (email) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield user_model_1.default.findOne({ email: email });
+    if (!user)
+        throw new ErrorHandler_1.NotFoundError("No such user found");
+    const resetToken = getRandomNumber();
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpiresIn = getDateFifteenMinutesFromNow();
+    yield user.save();
+    // aba email send hanni
+});
+exports.forgotPasswordService = forgotPasswordService;
+const checkForgotPasswordTokenService = (email, token) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield user_model_1.default.findOne({ email, resetPasswordToken: token });
+    if (!user)
+        throw new ErrorHandler_1.NotFoundError("No such user found");
+    if (user.resetPasswordExpiresIn && user.resetPasswordExpiresIn > new Date())
+        throw new ErrorHandler_1.BadRequestError("Token has expired");
+    return true;
+});
+exports.checkForgotPasswordTokenService = checkForgotPasswordTokenService;
+const resetPasswordService = (newPassword, confirmPassword, userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const hashedPassword = yield bcryptjs_1.default.hash(newPassword, 10);
+    yield user_model_1.default.findByIdAndUpdate(userId, { password: hashedPassword }, { new: true });
+    return true;
+});
+exports.resetPasswordService = resetPasswordService;

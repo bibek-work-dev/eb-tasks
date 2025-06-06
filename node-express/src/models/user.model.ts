@@ -12,6 +12,8 @@ const userSchema = new Schema(
     bio: { type: String, default: "" },
     verificationToken: { type: String },
     verficationDate: { type: Date },
+    resetPasswordToken: { type: String },
+    resetPasswordExpiresIn: { type: Date },
   },
   { timestamps: true }
 );
