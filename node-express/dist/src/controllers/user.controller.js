@@ -42,12 +42,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loginController = exports.registerController = void 0;
+exports.verifyEmailController = exports.loginController = exports.registerController = void 0;
 const userService = __importStar(require("../services/user.service"));
 const registerController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    // console.log("req, res", req, res);
     try {
-        console.log("constroller");
         const { email, password, name, status, dateOfBirth, hobbies, bio } = req.body;
         const user = yield userService.registerService({
             name,
@@ -62,7 +60,7 @@ const registerController = (req, res, next) => __awaiter(void 0, void 0, void 0,
         res.status(201).json({
             success: true,
             data: user,
-            message: "You have been successfully regiustered",
+            message: "You have been successfully registered. Please check your email for verfication",
         });
     }
     catch (error) {
@@ -87,3 +85,19 @@ const loginController = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.loginController = loginController;
+const verifyEmailController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email, code } = req.body;
+        console.log("email and code", email, code);
+        const result = yield userService.verifyEmailService(email, code);
+        res.status(201).json({
+            success: true,
+            message: "You are now successfully verified. You can access the resources now",
+        });
+    }
+    catch (error) {
+        console.log("error", error);
+        next(error);
+    }
+});
+exports.verifyEmailController = verifyEmailController;

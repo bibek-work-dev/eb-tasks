@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UnauthorizedError = exports.NotFoundError = exports.BadRequestError = exports.InternalSeverError = void 0;
+exports.ForbiddenError = exports.UnauthorizedError = exports.NotFoundError = exports.BadRequestError = exports.InternalSeverError = void 0;
 class ErrorHanlder extends Error {
     constructor(statusCode, message = "Internal Server Error", error = "BadRequest") {
         console.log(statusCode, message, error);
@@ -38,3 +38,9 @@ class UnauthorizedError extends ErrorHanlder {
     }
 }
 exports.UnauthorizedError = UnauthorizedError;
+class ForbiddenError extends ErrorHanlder {
+    constructor(message = "You aren;t allowed to access this resources") {
+        super(403, message, "Forbidden");
+    }
+}
+exports.ForbiddenError = ForbiddenError;

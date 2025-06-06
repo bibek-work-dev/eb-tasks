@@ -41,3 +41,9 @@ export class UnauthorizedError extends ErrorHanlder {
     console.log("unauthorized error", this.message);
   }
 }
+
+export class ForbiddenError extends ErrorHanlder {
+  constructor(message: string = "You aren;t allowed to access this resources") {
+    super(403, message, "Forbidden");
+  }
+}

@@ -15,5 +15,11 @@ export const loginSchema = z.object({
   password: z.string().min(6).max(15),
 });
 
+export const verifyEmailSchema = z.object({
+  email: z.string().email(),
+  code: z.string().length(6),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;

@@ -4,7 +4,6 @@ import { ZodSchema } from "zod";
 export const zodValidate = (schema: ZodSchema) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.body);
-    console.log("result", result);
     if (result.error) {
       const combinedMessage: string = result.error.errors
         .map((err) => `${err.path.join(".")}: ${err.message}`)

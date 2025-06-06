@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const connectDb = async (dbUrl: string) => {
+const connectDb = async (dbUrl: string): Promise<any> => {
   await mongoose.connect(dbUrl);
 };
 

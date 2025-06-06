@@ -1,5 +1,5 @@
 import "dotenv/config";
-import connectDb from "./src/utils/connectDb";
+import connectDb from "./src/config/connectDb";
 import app from "./src/app";
 const PORT = process.env.PORT || 3000;
 const dbUrl = process.env.MONGO_URI ? process.env.MONGO_URI : "";
@@ -18,6 +18,6 @@ connectDb(dbUrl)
       process.exit(1);
     });
   })
-  .catch((error) => {
+  .catch((error: any) => {
     console.log("Something went wrong");
   });

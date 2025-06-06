@@ -4,7 +4,6 @@ exports.zodValidate = void 0;
 const zodValidate = (schema) => {
     return (req, res, next) => {
         const result = schema.safeParse(req.body);
-        console.log("result", result);
         if (result.error) {
             const combinedMessage = result.error.errors
                 .map((err) => `${err.path.join(".")}: ${err.message}`)

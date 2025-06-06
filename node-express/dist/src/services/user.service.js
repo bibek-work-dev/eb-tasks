@@ -23,10 +23,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loginService = exports.registerService = void 0;
+exports.verifyEmailService = exports.loginService = exports.registerService = void 0;
 const user_model_1 = __importDefault(require("../models/user.model"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const ErrorHandler_1 = require("../utils/ErrorHandler");
+const sendEmail_1 = require("../utils/sendEmail");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const getRandomNumber = () => {
+    return Math.floor(Math.random() * 1000000).toString();
+};
+const getDateFifteenMinutesFromNow = () => {
+    return new Date(Date.now() + 15 * 60 * 1000);
+};
 const registerService = (data) => __awaiter(void 0, void 0, void 0, function* () {
     const alreadyExists = yield user_model_1.default.findOne({ email: data.email });
     if (alreadyExists)
@@ -34,7 +42,9 @@ const registerService = (data) => __awaiter(void 0, void 0, void 0, function* ()
     console.log("register service");
     const hashedPassword = yield bcryptjs_1.default.hash(data.password, 10);
     const { password } = data, rest = __rest(data, ["password"]);
-    return user_model_1.default.create(Object.assign(Object.assign({}, rest), { password: hashedPassword }));
+    const verificationToken = getRandomNumber();
+    yield (0, sendEmail_1.sendVerficationEmail)(data.email, verificationToken);
+    return user_model_1.default.create(Object.assign(Object.assign({}, rest), { password: hashedPassword, verificationToken, verficationDate: getDateFifteenMinutesFromNow() }));
 });
 exports.registerService = registerService;
 const loginService = (data) => __awaiter(void 0, void 0, void 0, function* () {
@@ -42,10 +52,40 @@ const loginService = (data) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("login service");
     if (!alreadyExists)
         throw new ErrorHandler_1.UnauthorizedError("User doesn't exist");
+    if (alreadyExists.status != "Active") {
+        throw new ErrorHandler_1.ForbiddenError("You aren't verified");
+    }
     const isPasswordValid = yield bcryptjs_1.default.compare(data.password, alreadyExists.password);
     if (!isPasswordValid) {
         throw new ErrorHandler_1.BadRequestError("Invalid credentials");
     }
-    return alreadyExists;
+    const token = jsonwebtoken_1.default.sign({
+        userId: alreadyExists._id.toString(),
+        email: alreadyExists.email.toString(),
+    }, "your-secret", { expiresIn: "1h" });
+    return { token, user: alreadyExists };
 });
 exports.loginService = loginService;
+const verifyEmailService = (email, code) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield user_model_1.default.findOne({ email });
+    if (!user) {
+        throw new ErrorHandler_1.NotFoundError("No such user exists");
+    }
+    if (user.verificationToken !== code) {
+        throw new ErrorHandler_1.UnauthorizedError("Invalid verification code.");
+    }
+    console.log(typeof user.verficationDate);
+    const currDate = new Date();
+    console.log(typeof currDate);
+    if (user.verficationDate && user.verficationDate < currDate) {
+        throw new ErrorHandler_1.BadRequestError("Verification token has expired. Please request a new one.");
+    }
+    if (user.status === "Active") {
+        throw new ErrorHandler_1.BadRequestError("User is already verified.");
+    }
+    user.status = "Active";
+    user.verificationToken = undefined;
+    user.verficationDate = undefined;
+    yield user.save();
+});
+exports.verifyEmailService = verifyEmailService;

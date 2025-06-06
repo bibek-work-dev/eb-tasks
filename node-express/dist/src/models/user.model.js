@@ -38,10 +38,12 @@ const userSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    status: { type: String, enum: ["Active", "InActive"], default: "Active" },
+    status: { type: String, enum: ["Active", "InActive"], default: "InActive" },
     dateOfBirth: { type: Date, required: true },
     hobbies: { type: [String], default: [] },
     bio: { type: String, default: "" },
+    verificationToken: { type: String },
+    verficationDate: { type: Date },
 }, { timestamps: true });
 const UserModel = mongoose_1.default.model("User", userSchema);
 exports.default = UserModel;

@@ -1,15 +1,12 @@
 import * as userService from "../services/user.service";
-import { Request, Response, NextFunction } from "express";
-import { loginSchema, registerSchema } from "../utils/validationSchemas";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 
-export const registerController = async (
+export const registerController: RequestHandler = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  // console.log("req, res", req, res);
   try {
-    console.log("constroller");
     const { email, password, name, status, dateOfBirth, hobbies, bio } =
       req.body;
     const user = await userService.registerService({
@@ -22,10 +19,12 @@ export const registerController = async (
       bio,
     });
     console.log("user", user);
+
     res.status(201).json({
       success: true,
       data: user,
-      message: "You have been successfully regiustered",
+      message:
+        "You have been successfully registered. Please check your email for verfication",
     });
   } catch (error: any) {
     console.log("register, error", error);
@@ -33,7 +32,7 @@ export const registerController = async (
   }
 };
 
-export const loginController = async (
+export const loginController: RequestHandler = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -48,6 +47,26 @@ export const loginController = async (
     });
   } catch (error: any) {
     console.log("lgoin error", error);
+    next(error);
+  }
+};
+
+export const verifyEmailController: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, code } = req.body;
+    console.log("email and code", email, code);
+    const result = await userService.verifyEmailService(email, code);
+    res.status(201).json({
+      success: true,
+      message:
+        "You are now successfully verified. You can access the resources now",
+    });
+  } catch (error: any) {
+    console.log("error", error);
     next(error);
   }
 };

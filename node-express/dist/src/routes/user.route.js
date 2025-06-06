@@ -44,4 +44,5 @@ const zodValidation_1 = require("../middlewares/zodValidation");
 const userRoutes = express_1.default.Router();
 userRoutes.post("/register", (0, zodValidation_1.zodValidate)(validationSchemas_1.registerSchema), userController.registerController);
 userRoutes.post("/login", (0, zodValidation_1.zodValidate)(validationSchemas_1.loginSchema), userController.loginController);
+userRoutes.post("/verify-email", (0, zodValidation_1.zodValidate)(validationSchemas_1.verifyEmailSchema), userController.verifyEmailController);
 exports.default = userRoutes;
