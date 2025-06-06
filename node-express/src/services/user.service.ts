@@ -1,6 +1,7 @@
 import UserModel from "../models/user.model";
 import { Usertatus } from "../types/types";
 import bcryptjs from "bcryptjs";
+import { BadRequestError, UnauthorizedError } from "../utils/ErrorHandler";
 
 interface registerInput {
   name: string;
@@ -19,7 +20,7 @@ interface loginInput {
 
 export const registerService = async (data: registerInput) => {
   const alreadyExists = await UserModel.findOne({ email: data.email });
-  if (alreadyExists) throw new Error("Email already exists");
+  if (alreadyExists) throw new BadRequestError("Email already exists");
 
   const hashedPassword = await bcryptjs.hash(data.password, 10);
   const { password, ...rest } = data;
@@ -28,7 +29,7 @@ export const registerService = async (data: registerInput) => {
 
 export const loginService = async (data: loginInput) => {
   const alreadyExists = await UserModel.findOne({ email: data.email });
-  if (!alreadyExists) throw new Error("User Doesn't Exists");
+  if (!alreadyExists) throw new UnauthorizedError("User doesn't exist");
 
   const isPasswordValid = await bcryptjs.compare(
     data.password,

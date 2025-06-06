@@ -1,5 +1,7 @@
-import express from "express";
+import express, { ErrorRequestHandler, RequestHandler } from "express";
 import userRoutes from "./routes/user.route";
+import { errorMiddleware } from "./middlewares/error.middleware";
+import { ErrorHandlingMiddlewareFunction } from "mongoose";
 
 const app = express();
 
@@ -8,5 +10,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/v1/", userRoutes);
+
+app.use(errorMiddleware as ErrorRequestHandler);
 
 export default app;

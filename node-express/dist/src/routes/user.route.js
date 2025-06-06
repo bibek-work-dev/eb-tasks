@@ -38,9 +38,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const userController = __importStar(require("../controllers/user.controller"));
+// import { zodValidation } from "../middlewares/zodValidation";
+const validationSchemas_1 = require("../utils/validationSchemas");
+const zodValidation_1 = require("../middlewares/zodValidation");
 const userRoutes = express_1.default.Router();
-userRoutes.post("/register", 
-//   zodValidation(registerSchema),
-userController.registerController);
-userRoutes.post("/login", userController.loginController);
+userRoutes.post("/register", (0, zodValidation_1.zodValidate)(validationSchemas_1.registerSchema), userController.registerController);
+userRoutes.post("/login", (0, zodValidation_1.zodValidate)(validationSchemas_1.loginSchema), userController.loginController);
 exports.default = userRoutes;

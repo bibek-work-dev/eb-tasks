@@ -44,21 +44,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loginController = exports.registerController = void 0;
 const userService = __importStar(require("../services/user.service"));
-const validationSchemas_1 = require("../utils/validationSchemas");
 const registerController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("req, res", req, res);
+    // console.log("req, res", req, res);
     try {
-        const result = validationSchemas_1.registerSchema.safeParse(req.body);
-        console.log("register", result);
-        if (!result.success) {
-            res.status(201).json({
-                success: false,
-                errors: result.error.errors.map((err) => ({
-                    path: err.path.join("."),
-                    message: err.message,
-                })),
-            });
-        }
         const { email, password, name, status, dateOfBirth, hobbies, bio } = req.body;
         const user = yield userService.registerService({
             name,
@@ -84,16 +72,6 @@ const registerController = (req, res) => __awaiter(void 0, void 0, void 0, funct
 exports.registerController = registerController;
 const loginController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = validationSchemas_1.loginSchema.safeParse(req.body);
-        if (!result.success) {
-            res.status(201).json({
-                success: false,
-                errors: result.error.errors.map((err) => ({
-                    path: err.path.join("."),
-                    message: err.message,
-                })),
-            });
-        }
         const { email, password } = req.body;
         const user = yield userService.loginService({ email, password });
         res.status(200).json({

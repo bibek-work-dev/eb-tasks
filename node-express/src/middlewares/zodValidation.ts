@@ -8,9 +8,17 @@ export const zodValidate = (schema: ZodSchema) => {
     if (result.error) {
       res.status(400).json({
         success: false,
+        statusCode: 400,
+        errors: result.error.errors.map((err) => ({
+          path: err.path.join("."),
+          message: err.message,
+        })),
         message: "Something went wrong",
+        error: "BadRequest",
       });
     }
+
+    req.body = result.data;
     next();
   };
 };
