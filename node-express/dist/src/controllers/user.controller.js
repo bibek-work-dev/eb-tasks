@@ -44,9 +44,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loginController = exports.registerController = void 0;
 const userService = __importStar(require("../services/user.service"));
-const registerController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const registerController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     // console.log("req, res", req, res);
     try {
+        console.log("constroller");
         const { email, password, name, status, dateOfBirth, hobbies, bio } = req.body;
         const user = yield userService.registerService({
             name,
@@ -66,11 +67,11 @@ const registerController = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
     catch (error) {
         console.log("register, error", error);
-        res.status(400).json({ success: false, error: error.message });
+        next(error);
     }
 });
 exports.registerController = registerController;
-const loginController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const loginController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
         const user = yield userService.loginService({ email, password });
@@ -82,7 +83,7 @@ const loginController = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
     catch (error) {
         console.log("lgoin error", error);
-        res.status(400).json({ success: false, error: error.message });
+        next(error);
     }
 });
 exports.loginController = loginController;

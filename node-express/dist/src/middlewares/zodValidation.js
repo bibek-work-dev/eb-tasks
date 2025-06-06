@@ -6,13 +6,14 @@ const zodValidate = (schema) => {
         const result = schema.safeParse(req.body);
         console.log("result", result);
         if (result.error) {
+            const combinedMessage = result.error.errors
+                .map((err) => `${err.path.join(".")}: ${err.message}`)
+                .join(", ");
             res.status(400).json({
                 success: false,
-                errors: result.error.errors.map((err) => ({
-                    path: err.path.join("."),
-                    message: err.message,
-                })),
-                message: "Something went wrong",
+                statusCode: 400,
+                message: combinedMessage || "Something went wrong",
+                error: "BadRequest",
             });
         }
         req.body = result.data;

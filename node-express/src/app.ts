@@ -11,6 +11,11 @@ app.use(express.json());
 // Routes
 app.use("/api/v1/", userRoutes);
 
+// app.use((req, res, next) => {
+//   console.log("yeha");
+//   next();
+// });
+
 app.use(errorMiddleware as ErrorRequestHandler);
 
 export default app;

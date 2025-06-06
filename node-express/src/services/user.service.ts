@@ -22,6 +22,7 @@ export const registerService = async (data: registerInput) => {
   const alreadyExists = await UserModel.findOne({ email: data.email });
   if (alreadyExists) throw new BadRequestError("Email already exists");
 
+  console.log("register service");
   const hashedPassword = await bcryptjs.hash(data.password, 10);
   const { password, ...rest } = data;
   return UserModel.create({ ...rest, password: hashedPassword });
@@ -29,6 +30,7 @@ export const registerService = async (data: registerInput) => {
 
 export const loginService = async (data: loginInput) => {
   const alreadyExists = await UserModel.findOne({ email: data.email });
+  console.log("login service");
   if (!alreadyExists) throw new UnauthorizedError("User doesn't exist");
 
   const isPasswordValid = await bcryptjs.compare(
@@ -37,7 +39,7 @@ export const loginService = async (data: loginInput) => {
   );
 
   if (!isPasswordValid) {
-    throw new Error("Invalid credentials");
+    throw new BadRequestError("Invalid credentials");
   }
 
   return alreadyExists;

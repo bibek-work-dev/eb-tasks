@@ -9,6 +9,7 @@ export const registerController = async (
 ) => {
   // console.log("req, res", req, res);
   try {
+    console.log("constroller");
     const { email, password, name, status, dateOfBirth, hobbies, bio } =
       req.body;
     const user = await userService.registerService({

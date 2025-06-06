@@ -26,10 +26,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.loginService = exports.registerService = void 0;
 const user_model_1 = __importDefault(require("../models/user.model"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const ErrorHandler_1 = require("../utils/ErrorHandler");
 const registerService = (data) => __awaiter(void 0, void 0, void 0, function* () {
     const alreadyExists = yield user_model_1.default.findOne({ email: data.email });
     if (alreadyExists)
-        throw new Error("Email already exists");
+        throw new ErrorHandler_1.BadRequestError("Email already exists");
+    console.log("register service");
     const hashedPassword = yield bcryptjs_1.default.hash(data.password, 10);
     const { password } = data, rest = __rest(data, ["password"]);
     return user_model_1.default.create(Object.assign(Object.assign({}, rest), { password: hashedPassword }));
@@ -37,11 +39,12 @@ const registerService = (data) => __awaiter(void 0, void 0, void 0, function* ()
 exports.registerService = registerService;
 const loginService = (data) => __awaiter(void 0, void 0, void 0, function* () {
     const alreadyExists = yield user_model_1.default.findOne({ email: data.email });
+    console.log("login service");
     if (!alreadyExists)
-        throw new Error("User Doesn't Exists");
+        throw new ErrorHandler_1.UnauthorizedError("User doesn't exist");
     const isPasswordValid = yield bcryptjs_1.default.compare(data.password, alreadyExists.password);
     if (!isPasswordValid) {
-        throw new Error("Invalid credentials");
+        throw new ErrorHandler_1.BadRequestError("Invalid credentials");
     }
     return alreadyExists;
 });
