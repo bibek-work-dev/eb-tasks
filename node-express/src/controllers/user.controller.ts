@@ -146,6 +146,7 @@ export const resetPasswordController: RequestHandler = async (
     );
     res.status(201).json({
       success: true,
+      data: null,
       message: "Your password have been successfully changed",
     });
   } catch (error) {

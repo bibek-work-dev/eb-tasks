@@ -16,6 +16,17 @@ exports.default = requireAuth;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const genEnvVariables_1 = require("../config/genEnvVariables");
 const ErrorHandler_1 = require("../utils/ErrorHandler");
+// export interface typeJwtPayload {
+//   userId: string;
+//   email: string;
+// }
+// declare global {
+//   namespace Express {
+//     interface Request {
+//       user?: typeJwtPayload;
+//     }
+//   }
+// }
 const JWT_SECRET = (0, genEnvVariables_1.getEnvVariables)().JWT_SECRET;
 function requireAuth(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {

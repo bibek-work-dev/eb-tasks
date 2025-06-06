@@ -10,7 +10,7 @@ const app = (0, express_1.default)();
 // middlewares
 app.use(express_1.default.json());
 // Routes
-app.use("/api/v1/", user_route_1.default);
+app.use("/api/v1/user", user_route_1.default);
 // app.use((req, res, next) => {
 //   console.log("yeha");
 //   next();
