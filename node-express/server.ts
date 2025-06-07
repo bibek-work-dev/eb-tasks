@@ -3,7 +3,7 @@ import connectDb from "./src/config/connectDb";
 import app from "./src/app";
 const PORT = process.env.PORT || 3000;
 const dbUrl = process.env.MONGO_URI ? process.env.MONGO_URI : "";
-
+console.log("dbUrl", dbUrl)
 connectDb(dbUrl)
   .then(() => {
     const server = app.listen(PORT, () => {

@@ -81,6 +81,11 @@ export const getMeController: RequestHandler = async (
   try {
     const userId = req.user?.userId;
     const user = await userService.getMeService(userId);
+    res.status(200).json({
+      success: true, 
+      data: user,
+      message: "user fetched successfully"
+    })
   } catch (error) {
     next(error);
   }
@@ -92,11 +97,13 @@ export const updateProfileController: RequestHandler = async (
   next: NextFunction
 ) => {
   try {
-    const result = await userService.updateProfileService();
+    const userId = req.user.userId;
+    console.log("req.body in update profile", req.body)
+    const result = await userService.updateProfileService(userId, req.body);
     res.status(201).json({
       success: true,
       data: result,
-      message: "The email has been successfully sent",
+      message: "The proifle has been updated ",
     });
   } catch (error) {
     next(error);
@@ -109,7 +116,13 @@ export const changePasswordController: RequestHandler = async (
   next: NextFunction
 ) => {
   try {
-    const result = await userService.changePasswordService();
+    const {newPassword} = req.body;
+    const userId = req.user.userId
+    const result = await userService.changePasswordService(userId, newPassword);
+    res.status(200).json({
+      success: true,
+      message: "Your password has been changed !!"
+    })
   } catch (error: any) {
     next(error);
   }

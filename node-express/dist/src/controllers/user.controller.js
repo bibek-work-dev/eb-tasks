@@ -108,6 +108,11 @@ const getMeController = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     try {
         const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
         const user = yield userService.getMeService(userId);
+        res.status(200).json({
+            success: true,
+            data: user,
+            message: "user fetched successfully"
+        });
     }
     catch (error) {
         next(error);
@@ -116,11 +121,13 @@ const getMeController = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
 exports.getMeController = getMeController;
 const updateProfileController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield userService.updateProfileService();
+        const userId = req.user.userId;
+        console.log("req.body in update profile", req.body);
+        const result = yield userService.updateProfileService(userId, req.body);
         res.status(201).json({
             success: true,
             data: result,
-            message: "The email has been successfully sent",
+            message: "The proifle has been updated ",
         });
     }
     catch (error) {
@@ -130,7 +137,13 @@ const updateProfileController = (req, res, next) => __awaiter(void 0, void 0, vo
 exports.updateProfileController = updateProfileController;
 const changePasswordController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield userService.changePasswordService();
+        const { newPassword } = req.body;
+        const userId = req.user.userId;
+        const result = yield userService.changePasswordService(userId, newPassword);
+        res.status(200).json({
+            success: true,
+            message: "Your password has been changed !!"
+        });
     }
     catch (error) {
         next(error);

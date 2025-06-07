@@ -27,8 +27,10 @@ exports.resetPasswordService = exports.forgotPasswordService = exports.changePas
 const user_model_1 = __importDefault(require("../models/user.model"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const ErrorHandler_1 = require("../utils/ErrorHandler");
-const sendEmail_1 = require("../utils/sendEmail");
+const sendEmail_1 = require("../utils/emails/sendEmail");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const genEnvVariables_1 = require("../config/genEnvVariables");
+const JWT_SECRET = (0, genEnvVariables_1.getEnvVariables)().JWT_SECRET;
 const getRandomNumber = () => {
     return Math.floor(Math.random() * 1000000).toString();
 };
@@ -62,7 +64,7 @@ const loginService = (data) => __awaiter(void 0, void 0, void 0, function* () {
     const token = jsonwebtoken_1.default.sign({
         userId: alreadyExists._id.toString(),
         email: alreadyExists.email.toString(),
-    }, "your-secret", { expiresIn: "1h" });
+    }, JWT_SECRET, { expiresIn: "1h" });
     return { token, user: alreadyExists };
 });
 exports.loginService = loginService;
@@ -96,14 +98,21 @@ const getMeService = (userId) => __awaiter(void 0, void 0, void 0, function* () 
     return user;
 });
 exports.getMeService = getMeService;
-const updateProfileService = () => __awaiter(void 0, void 0, void 0, function* () { });
+const updateProfileService = (userId, data) => __awaiter(void 0, void 0, void 0, function* () {
+    const updatedUser = yield user_model_1.default.findByIdAndUpdate(userId, data, { new: true });
+    return updatedUser;
+});
 exports.updateProfileService = updateProfileService;
 const logoutService = () => __awaiter(void 0, void 0, void 0, function* () {
     // client le garxa afai remove
     return true;
 });
 exports.logoutService = logoutService;
-const changePasswordService = () => __awaiter(void 0, void 0, void 0, function* () { });
+const changePasswordService = (userId, password) => __awaiter(void 0, void 0, void 0, function* () {
+    const hashedPassword = bcryptjs_1.default.hashSync(password, 10);
+    const updatePassword = yield user_model_1.default.findByIdAndUpdate(userId, { password: hashedPassword }, { new: true });
+    return updatePassword;
+});
 exports.changePasswordService = changePasswordService;
 const forgotPasswordService = (email) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield user_model_1.default.findOne({ email: email });

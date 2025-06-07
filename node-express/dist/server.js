@@ -8,6 +8,7 @@ const connectDb_1 = __importDefault(require("./src/config/connectDb"));
 const app_1 = __importDefault(require("./src/app"));
 const PORT = process.env.PORT || 3000;
 const dbUrl = process.env.MONGO_URI ? process.env.MONGO_URI : "";
+console.log("dbUrl", dbUrl);
 (0, connectDb_1.default)(dbUrl)
     .then(() => {
     const server = app_1.default.listen(PORT, () => {

@@ -10,8 +10,9 @@ import {
 import {
   sendResetPasswordEmail,
   sendVerficationEmail,
-} from "../utils/sendEmail";
+} from "../utils/emails/sendEmail";
 import jwt from "jsonwebtoken";
+import { getEnvVariables } from "../config/genEnvVariables";
 
 interface registerInput {
   name: string;
@@ -27,6 +28,9 @@ interface loginInput {
   email: string;
   password: string;
 }
+
+
+const JWT_SECRET = getEnvVariables().JWT_SECRET;
 
 const getRandomNumber = (): string => {
   return Math.floor(Math.random() * 1_000_000).toString();
@@ -75,7 +79,7 @@ export const loginService = async (data: loginInput) => {
       userId: alreadyExists._id.toString(),
       email: alreadyExists.email.toString(),
     },
-    "your-secret",
+    JWT_SECRET,
     { expiresIn: "1h" }
   );
 
@@ -121,14 +125,22 @@ export const getMeService = async (userId: string) => {
   return user;
 };
 
-export const updateProfileService = async () => {};
+export const updateProfileService = async (userId: string, data: any) => {
+  const updatedUser = await UserModel.findByIdAndUpdate(userId, data, {new: true})
+  return updatedUser;
+};
 
 export const logoutService = async () => {
   // client le garxa afai remove
   return true;
 };
 
-export const changePasswordService = async () => {};
+export const changePasswordService = async (userId: string, password: string
+) => {
+  const hashedPassword = bcryptjs.hashSync(password, 10);
+  const updatePassword  = await UserModel.findByIdAndUpdate(userId, {password: hashedPassword}, {new: true})
+  return updatePassword;
+};
 
 export const forgotPasswordService = async (email: string) => {
   const user = await UserModel.findOne({ email: email });
@@ -137,7 +149,6 @@ export const forgotPasswordService = async (email: string) => {
   user.resetPasswordToken = resetToken;
   user.resetPasswordExpiresIn = getDateFifteenMinutesFromNow();
   await user.save();
-
   await sendResetPasswordEmail(email, resetToken);
   return true;
 };
