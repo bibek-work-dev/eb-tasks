@@ -13,25 +13,7 @@ export const likePostController = async (
     res.status(200).json({
       success: true,
       data: result,
-      message: "Post liked successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const unlikePostController = async (
-  req: Request<{ postId: string }, {}, {}>,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { postId } = req.params;
-    const result = await likeService.unlikePostService(req.user.userId, postId);
-    res.status(200).json({
-      success: true,
-      data: result,
-      message: "Post disliked successfully",
+      message: "Post updated successfully",
     });
   } catch (error) {
     next(error);
