@@ -34,9 +34,23 @@ export default async function requireAuth(
     if (bearerToken[1] !== "Bearer")
       if (!token) throw new UnauthorizedError("Not authorized at all");
     const decodedToken = <typeJwtPayload>await jwt.verify(token, JWT_SECRET);
+    console.log("decodedToken", decodedToken);
+    if (!decodedToken) {
+      throw new UnauthorizedError("Not authorized at all");
+    }
     req.user = decodedToken;
     next();
   } catch (error: any) {
+    console.log("error in requireAuth middleware", error);
+    if (error.name === "JsonWebTokenError") {
+      return next(new UnauthorizedError("Invalid token"));
+    }
+    if (error.name === "TokenExpiredError") {
+      return next(new UnauthorizedError("Token expired"));
+    }
+    if (error.name === "NotBeforeError") {
+      return next(new UnauthorizedError("Token not active yet"));
+    }
     next(error);
   }
 }

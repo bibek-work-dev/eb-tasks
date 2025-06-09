@@ -35,6 +35,14 @@ export class NotFoundError extends ErrorHanlder {
   }
 }
 
+export class ConflictError extends ErrorHanlder {
+  constructor(
+    message: string = "The request conflicts with the current state of the server"
+  ) {
+    super(409, message, "Conflict");
+  }
+}
+
 export class UnauthorizedError extends ErrorHanlder {
   constructor(message: string = "You aren't authorized") {
     super(401, message, "Unauthorized");

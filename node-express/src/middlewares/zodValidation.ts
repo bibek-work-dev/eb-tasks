@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodSchema } from "zod";
 
-export const zodValidate = (schema: ZodSchema) => {
+export const zodValidate = <T>(schema: ZodSchema<T>) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.body);
+    console.log("result", result);
     if (result.error) {
       const combinedMessage: string = result.error.errors
         .map((err) => `${err.path.join(".")}: ${err.message}`)

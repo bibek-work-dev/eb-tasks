@@ -34,7 +34,12 @@ userRoutes.post(
 
 userRoutes.get("/get-me", requireAuth, userController.getMeController);
 
-userRoutes.put("/update-profile", zodValidate(updateProfileSchema), requireAuth, userController.updateProfileController);
+userRoutes.put(
+  "/update-profile",
+  zodValidate(updateProfileSchema),
+  requireAuth,
+  userController.updateProfileController
+);
 
 userRoutes.post(
   "/forgot-password",
@@ -42,7 +47,7 @@ userRoutes.post(
   userController.forgotPasswordController
 );
 
-userRoutes.post(
+userRoutes.patch(
   "/reset-password",
   zodValidate(resetPasswordSchema),
   userController.resetPasswordController

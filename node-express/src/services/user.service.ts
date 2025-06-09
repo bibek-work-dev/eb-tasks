@@ -1,5 +1,4 @@
 import UserModel from "../models/user.model";
-import { Usertatus } from "../types/types";
 import bcryptjs from "bcryptjs";
 import {
   BadRequestError,
@@ -11,36 +10,31 @@ import {
   sendResetPasswordEmail,
   sendVerficationEmail,
 } from "../utils/emails/sendEmail";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import { getEnvVariables } from "../config/genEnvVariables";
-
-interface registerInput {
-  name: string;
-  email: string;
-  password: string;
-  dateOfBirth: Date;
-  status: Usertatus;
-  hobbies: string[];
-  bio: string;
-}
-
-interface loginInput {
-  email: string;
-  password: string;
-}
-
+import {
+  typeForgotPasswordInput,
+  typeLoginInput,
+  typeRegisterInput,
+  typeResetPasswordInput,
+  typeUpdateProfileInput,
+  typeVerifyEmailInput,
+} from "../utils/validations/usersvalidationSchemas";
 
 const JWT_SECRET = getEnvVariables().JWT_SECRET;
+const JWT_EXPIRES_IN = getEnvVariables().JWT_EXPIRESIN || `1d`;
 
 const getRandomNumber = (): string => {
-  return Math.floor(Math.random() * 1_000_000).toString();
+  return Math.floor(Math.random() * 1_000_000)
+    .toString()
+    .padStart(6, "0");
 };
 
 const getDateFifteenMinutesFromNow = (): Date => {
   return new Date(Date.now() + 15 * 60 * 1000);
 };
 
-export const registerService = async (data: registerInput) => {
+export const registerService = async (data: typeRegisterInput) => {
   const alreadyExists = await UserModel.findOne({ email: data.email });
   if (alreadyExists) throw new BadRequestError("Email already exists");
 
@@ -57,7 +51,7 @@ export const registerService = async (data: registerInput) => {
   });
 };
 
-export const loginService = async (data: loginInput) => {
+export const loginService = async (data: typeLoginInput) => {
   const alreadyExists = await UserModel.findOne({ email: data.email });
   console.log("login service");
   if (!alreadyExists) throw new UnauthorizedError("User doesn't exist");
@@ -74,19 +68,29 @@ export const loginService = async (data: loginInput) => {
   if (!isPasswordValid) {
     throw new BadRequestError("Invalid credentials");
   }
+
+  if (!JWT_SECRET) {
+    throw new BadRequestError(
+      "JWT_SECRET is not defined in environment variables"
+    );
+  }
+
   const token = jwt.sign(
     {
       userId: alreadyExists._id.toString(),
       email: alreadyExists.email.toString(),
     },
     JWT_SECRET,
-    { expiresIn: "1h" }
+    { expiresIn: JWT_EXPIRES_IN as any }
   );
 
   return { token, user: alreadyExists };
 };
 
-export const verifyEmailService = async (email: string, code: string) => {
+export const verifyEmailService = async ({
+  email,
+  code,
+}: typeVerifyEmailInput) => {
   const user = await UserModel.findOne({ email });
 
   if (!user) {
@@ -125,8 +129,13 @@ export const getMeService = async (userId: string) => {
   return user;
 };
 
-export const updateProfileService = async (userId: string, data: any) => {
-  const updatedUser = await UserModel.findByIdAndUpdate(userId, data, {new: true})
+export const updateProfileService = async (
+  userId: string,
+  data: typeUpdateProfileInput
+) => {
+  const updatedUser = await UserModel.findByIdAndUpdate(userId, data, {
+    new: true,
+  });
   return updatedUser;
 };
 
@@ -135,40 +144,50 @@ export const logoutService = async () => {
   return true;
 };
 
-export const changePasswordService = async (userId: string, password: string
+export const changePasswordService = async (
+  userId: string,
+  password: string
 ) => {
   const hashedPassword = bcryptjs.hashSync(password, 10);
-  const updatePassword  = await UserModel.findByIdAndUpdate(userId, {password: hashedPassword}, {new: true})
+  const updatePassword = await UserModel.findByIdAndUpdate(
+    userId,
+    { password: hashedPassword },
+    { new: true }
+  );
   return updatePassword;
 };
 
-export const forgotPasswordService = async (email: string) => {
-  const user = await UserModel.findOne({ email: email });
+export const forgotPasswordService = async (data: typeForgotPasswordInput) => {
+  const user = await UserModel.findOne({ email: data.email });
   if (!user) throw new NotFoundError("No such user found");
   const resetToken = getRandomNumber();
   user.resetPasswordToken = resetToken;
   user.resetPasswordExpiresIn = getDateFifteenMinutesFromNow();
   await user.save();
-  await sendResetPasswordEmail(email, resetToken);
+  await sendResetPasswordEmail(data.email, resetToken);
   return true;
 };
 
-export const resetPasswordService = async (
-  newPassword: string,
-  confirmPassword: string,
-  code: string,
-  userId: string
-) => {
+export const resetPasswordService = async (data: typeResetPasswordInput) => {
   const user = await UserModel.findOne({
-    resetPasswordToken: code,
-    _id: userId,
+    resetPasswordToken: data.code,
+    _id: data.userId,
   });
+  console.log("user in hashedPassword", user);
   if (!user) throw new Error("No such user found");
-  const hashedPassword = await bcryptjs.hash(newPassword, 10);
-  await UserModel.findByIdAndUpdate(
-    userId,
-    { password: hashedPassword },
-    { new: true }
-  );
+  if (
+    !user.resetPasswordExpiresIn ||
+    user.resetPasswordExpiresIn < new Date()
+  ) {
+    throw new BadRequestError("Reset password token has expired");
+  }
+  const hashedPassword = await bcryptjs.hash(data.newPassword, 10);
+  user.password = hashedPassword;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpiresIn = undefined;
+
+  await user.save();
+  console.log("user after hashedPassword", user);
+
   return true;
 };

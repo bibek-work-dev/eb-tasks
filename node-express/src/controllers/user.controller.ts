@@ -1,25 +1,21 @@
 import * as userService from "../services/user.service";
 import { Request, Response, NextFunction, RequestHandler } from "express";
+import {
+  typeForgotPasswordInput,
+  typeLoginInput,
+  typeRegisterInput,
+  typeResetPasswordInput,
+  typeUpdateProfileInput,
+} from "../utils/validations/usersvalidationSchemas";
 
 export const registerController: RequestHandler = async (
-  req: Request,
+  req: Request<{}, {}, typeRegisterInput>,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { email, password, name, status, dateOfBirth, hobbies, bio } =
-      req.body;
-    const user = await userService.registerService({
-      name,
-      email,
-      password,
-      status,
-      dateOfBirth,
-      hobbies,
-      bio,
-    });
+    const user = await userService.registerService(req.body);
     console.log("user", user);
-
     res.status(201).json({
       success: true,
       data: user,
@@ -33,13 +29,12 @@ export const registerController: RequestHandler = async (
 };
 
 export const loginController: RequestHandler = async (
-  req: Request,
+  req: Request<{}, {}, typeLoginInput>,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { email, password } = req.body;
-    const user = await userService.loginService({ email, password });
+    const user = await userService.loginService(req.body);
     console.log("user", user);
     res.status(200).json({
       success: true,
@@ -58,9 +53,7 @@ export const verifyEmailController: RequestHandler = async (
   next: NextFunction
 ) => {
   try {
-    const { email, code } = req.body;
-    console.log("email and code", email, code);
-    const result = await userService.verifyEmailService(email, code);
+    const result = await userService.verifyEmailService(req.body);
     res.status(201).json({
       success: true,
       result,
@@ -79,26 +72,25 @@ export const getMeController: RequestHandler = async (
   next: NextFunction
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user.userId;
     const user = await userService.getMeService(userId);
     res.status(200).json({
-      success: true, 
+      success: true,
       data: user,
-      message: "user fetched successfully"
-    })
+      message: "user fetched successfully",
+    });
   } catch (error) {
     next(error);
   }
 };
 
 export const updateProfileController: RequestHandler = async (
-  req: Request,
+  req: Request<{}, {}, typeUpdateProfileInput>,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const userId = req.user.userId;
-    console.log("req.body in update profile", req.body)
     const result = await userService.updateProfileService(userId, req.body);
     res.status(201).json({
       success: true,
@@ -116,26 +108,25 @@ export const changePasswordController: RequestHandler = async (
   next: NextFunction
 ) => {
   try {
-    const {newPassword} = req.body;
-    const userId = req.user.userId
+    const { newPassword } = req.body;
+    const userId = req.user.userId;
     const result = await userService.changePasswordService(userId, newPassword);
     res.status(200).json({
       success: true,
-      message: "Your password has been changed !!"
-    })
+      message: "Your password has been changed !!",
+    });
   } catch (error: any) {
     next(error);
   }
 };
 
 export const forgotPasswordController: RequestHandler = async (
-  req: Request,
+  req: Request<{}, {}, typeForgotPasswordInput>,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { email } = req.body;
-    await userService.forgotPasswordService(email);
+    await userService.forgotPasswordService(req.body);
     res
       .status(201)
       .json({ success: true, message: "The email has been successfully sent" });
@@ -145,21 +136,15 @@ export const forgotPasswordController: RequestHandler = async (
 };
 
 export const resetPasswordController: RequestHandler = async (
-  req: Request,
+  req: Request<{}, {}, typeResetPasswordInput>,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { newPassword, confirmPassword, code, userId } = req.body;
-    const result = await userService.resetPasswordService(
-      newPassword,
-      confirmPassword,
-      code,
-      userId
-    );
+    const result = await userService.resetPasswordService(req.body);
     res.status(201).json({
       success: true,
-      data: null,
+      data: result,
       message: "Your password have been successfully changed",
     });
   } catch (error) {

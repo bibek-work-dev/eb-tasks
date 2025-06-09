@@ -20,11 +20,11 @@ export const verifyEmailSchema = z.object({
 });
 
 export const updateProfileSchema = z.object({
-  name: z.string().min(5).max(20),
-  dateOfBirth: z.string().date(),
-  hobbies: z.array(z.string()),
-  bio: z.string().optional()
-})
+  name: z.string().min(5).max(20).optional(),
+  dateOfBirth: z.string().date().optional(),
+  hobbies: z.array(z.string()).optional(),
+  bio: z.string().optional().optional(),
+});
 
 export const forgotPasswordSchema = z.object({
   email: z.string().email(),
@@ -39,8 +39,12 @@ export const resetPasswordSchema = z.object({
 
 export const changePassswordSchema = z.object({
   newPassword: z.string().min(6).max(15),
-})
+});
 
-export type RegisterInput = z.infer<typeof registerSchema>;
-export type LoginInput = z.infer<typeof loginSchema>;
-export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type typeRegisterInput = z.infer<typeof registerSchema>;
+export type typeLoginInput = z.infer<typeof loginSchema>;
+export type typeVerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type typeChangePasswordInput = z.infer<typeof changePassswordSchema>;
+export type typeUpdateProfileInput = z.infer<typeof updateProfileSchema>;
+export type typeForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type typeResetPasswordInput = z.infer<typeof resetPasswordSchema>;
