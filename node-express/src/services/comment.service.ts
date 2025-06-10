@@ -1,4 +1,5 @@
 import CommentModel from "../models/comment.model";
+import PostModel from "../models/post.model";
 import { InternalSeverError, NotFoundError } from "../utils/ErrorHandler";
 import {
   typeCreateCommentInput,
@@ -6,6 +7,10 @@ import {
 } from "../utils/validations/commentValidationSchema";
 
 export const getCommentsService = async (postId: string) => {
+  const post = await PostModel.findById(postId);
+  if (!post) {
+    throw new NotFoundError("Post not found");
+  }
   const comments = await CommentModel.find({ postId })
     .populate("userId", "name email")
     .sort({ createdAt: -1 });
@@ -27,6 +32,10 @@ export const createCommentService = async (
     userId,
     data
   );
+  const post = await PostModel.findById(postId);
+  if (!post) {
+    throw new NotFoundError("Post not found");
+  }
   const comment = await CommentModel.create({
     ...data,
     postId,

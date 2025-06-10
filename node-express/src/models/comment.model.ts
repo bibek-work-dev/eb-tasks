@@ -1,6 +1,16 @@
+import e from "express";
 import mongoose from "mongoose";
 
-const commentSchema = new mongoose.Schema(
+export interface IComment extends mongoose.Document {
+  _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+  postId: mongoose.Types.ObjectId;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const commentSchema = new mongoose.Schema<IComment>(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -16,5 +26,5 @@ const commentSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-const CommentModel = mongoose.model("Comment", commentSchema);
+const CommentModel = mongoose.model<IComment>("Comment", commentSchema);
 export default CommentModel;

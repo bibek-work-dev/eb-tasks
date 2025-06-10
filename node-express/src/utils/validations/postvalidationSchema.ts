@@ -9,7 +9,6 @@ export const createPostSchema = z.object({
     .string()
     .min(1, "Content is required")
     .max(5000, "Content must be less than 5000 characters"),
-  imageUrl: z.string(),
 });
 
 export const updatePostSchema = createPostSchema.partial();

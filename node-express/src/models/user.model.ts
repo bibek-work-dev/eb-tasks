@@ -1,10 +1,28 @@
+import e from "express";
 import mongoose, { Schema } from "mongoose";
 
-const userSchema = new Schema(
+export interface IUser {
+  name: string;
+  email: string;
+  password: string;
+  status: "Active" | "InActive";
+  dateOfBirth: Date;
+  hobbies: string[];
+  bio: string;
+  verificationToken?: string;
+  verficationDate?: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpiresIn?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  _id: mongoose.Types.ObjectId;
+}
+
+const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: String, required: true, select: false },
     status: { type: String, enum: ["Active", "InActive"], default: "InActive" },
     dateOfBirth: { type: Date, required: true },
     hobbies: { type: [String], default: [] },
@@ -17,5 +35,5 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-const UserModel = mongoose.model("User", userSchema);
+const UserModel = mongoose.model<IUser>("User", userSchema);
 export default UserModel;

@@ -34,7 +34,7 @@ userRoutes.post(
 
 userRoutes.get("/get-me", requireAuth, userController.getMeController);
 
-userRoutes.put(
+userRoutes.patch(
   "/update-profile",
   zodValidate(updateProfileSchema),
   requireAuth,

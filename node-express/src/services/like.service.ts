@@ -20,5 +20,6 @@ export const getLikesService = async (postId: string) => {
     "userId",
     "name email"
   );
-  return likes;
+  const noOfLikes = await LikeModel.countDocuments({ postId });
+  return { noOfLikes, likes };
 };

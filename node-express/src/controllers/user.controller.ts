@@ -18,9 +18,9 @@ export const registerController: RequestHandler = async (
     console.log("user", user);
     res.status(201).json({
       success: true,
-      data: user,
       message:
         "You have been successfully registered. Please check your email for verfication",
+      data: user,
     });
   } catch (error: any) {
     console.log("register, error", error);
@@ -56,9 +56,9 @@ export const verifyEmailController: RequestHandler = async (
     const result = await userService.verifyEmailService(req.body);
     res.status(201).json({
       success: true,
-      result,
       message:
         "You are now successfully verified. You can access the resources now",
+      result,
     });
   } catch (error: any) {
     console.log("error", error);
@@ -94,8 +94,8 @@ export const updateProfileController: RequestHandler = async (
     const result = await userService.updateProfileService(userId, req.body);
     res.status(201).json({
       success: true,
-      data: result,
       message: "The proifle has been updated ",
+      data: result,
     });
   } catch (error) {
     next(error);
@@ -144,8 +144,8 @@ export const resetPasswordController: RequestHandler = async (
     const result = await userService.resetPasswordService(req.body);
     res.status(201).json({
       success: true,
-      data: result,
       message: "Your password have been successfully changed",
+      data: result,
     });
   } catch (error) {
     next(error);
@@ -161,8 +161,8 @@ export const logoutController: RequestHandler = async (
     const result = await userService.logoutService();
     res.status(200).json({
       success: true,
-      data: null,
       message: "You have been successfully logged Out.",
+      data: null,
     });
   } catch (error) {
     next(error);

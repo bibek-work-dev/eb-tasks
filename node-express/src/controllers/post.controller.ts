@@ -4,68 +4,109 @@ import {
   typeCreatePostSchema,
   typeUpdatePostSchema,
 } from "../utils/validations/postvalidationSchema";
+export interface UploadRequest<
+  P = {},
+  ResBody = any,
+  ReqBody = any,
+  ReqQuery = any
+> extends Request<P, ResBody, ReqBody, ReqQuery> {
+  file?: Express.Multer.File; // optional banaye eslai
+}
 
 export const getPostController = async (
   req: Request<{ postId: string }, {}, {}>,
   res: Response,
   next: NextFunction
 ) => {
+  const postId = req.params.postId;
+
+  // const filePath = path.join(__dirname, "..", "..", "uploads");
+
+  // if (!fs.existsSync(filePath)) {
+  //   fs.mkdirSync(filePath, { recursive: true });
+  // }
+  // const fileName = `${postId}.txt`;
+  // const filePathWithName = path.join(filePath, fileName);
+
+  // const writeAbleStream = fs.createWriteStream(filePathWithName);
+
+  // res.pipe(writeAbleStream);
+
+  // writeAbleStream.on("finish", async () => {
   try {
-    const postId = req.params.postId;
     const post = await postService.getPostService(postId);
     res.status(200).json({
       success: true,
-      data: post,
       message: "Post fetched successfully",
+      data: post,
     });
-  } catch (error) {
+  } catch (error: any) {
     next(error);
   }
+  // });
+  // writeAbleStream.on("error", (error: any) => {
+  //   console.error("Error writing to file:", error);
+  //   next(error);
+  // });
 };
 
 export const getAllPostsController = async (
-  req: Request<{}, {}, {}, { page: string; limit: string }>,
+  req: Request<{}, {}, {}, { page?: string; limit?: string }>,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page || "1") || 1;
+    const limit = parseInt(req.query.limit || "10") || 10;
     console.log("page", page, "limit", limit);
     const posts = await postService.getAllPostsService(page, limit);
     res.status(200).json({
       success: true,
-      data: posts,
       message: "All posts fetched successfully",
+      data: posts,
     });
   } catch (error) {
     next(error);
   }
 };
 
+type typeUpdatedCreatedPostSchema = typeCreatePostSchema & {
+  imageUrl?: string;
+};
+
 export const createPostController = async (
-  req: Request<{}, {}, typeCreatePostSchema>,
+  req: UploadRequest<{}, {}, typeUpdatedCreatedPostSchema>,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const userId = req.user.userId;
-
     const data = req.body;
+    const file = req.file;
+    console.log("file", file);
+    if (file) {
+      data.imageUrl = file.path;
+    } else {
+      data.imageUrl = "";
+    }
     console.log("data", data), userId;
     const post = await postService.createPostService(userId, data);
     res.status(201).json({
       success: true,
-      data: post,
       message: "Post created successfully",
+      data: post,
     });
   } catch (error) {
     next(error);
   }
 };
 
+type typeUpdatedUpdatePostSchema = typeUpdatePostSchema & {
+  imageUrl?: string;
+};
+
 export const updatePostController = async (
-  req: Request<{ postId: string }, {}, typeUpdatePostSchema>,
+  req: Request<{ postId: string }, {}, typeUpdatedUpdatePostSchema>,
   res: Response,
   next: NextFunction
 ) => {
@@ -74,11 +115,15 @@ export const updatePostController = async (
     const data = req.body;
     const userId = req.user.userId;
     console.log("postId", postId, "data", data, "userId", userId);
+    const file = req.file;
+    if (file) {
+      data.imageUrl = file.path;
+    }
     const post = await postService.updatePostService(userId, postId, data);
     res.status(200).json({
       success: true,
-      data: post,
       message: "Post updated successfully",
+      data: post,
     });
   } catch (error) {
     next(error);
@@ -86,7 +131,7 @@ export const updatePostController = async (
 };
 
 export const deletePostController = async (
-  req: Request<{ postId: string }, {}, typeCreatePostSchema>,
+  req: Request<{ postId: string }, {}, {}>,
   res: Response,
   next: NextFunction
 ) => {
@@ -96,8 +141,8 @@ export const deletePostController = async (
     const post = await postService.deletePostService(userId, postId);
     res.status(200).json({
       success: true,
-      data: post,
       message: "Post deleted successfully",
+      data: post,
     });
   } catch (error) {
     next(error);

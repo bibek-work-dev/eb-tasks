@@ -26,6 +26,7 @@ export default async function requireAuth(
 ): Promise<void> {
   try {
     const authHeaders = req.headers.authorization;
+    console.log("authHeaders", authHeaders);
     if (!authHeaders) {
       throw new UnauthorizedError("No authentication Header at all");
     }

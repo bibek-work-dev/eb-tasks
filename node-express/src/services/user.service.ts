@@ -2,6 +2,7 @@ import UserModel from "../models/user.model";
 import bcryptjs from "bcryptjs";
 import {
   BadRequestError,
+  ConflictError,
   ForbiddenError,
   NotFoundError,
   UnauthorizedError,
@@ -10,7 +11,7 @@ import {
   sendResetPasswordEmail,
   sendVerficationEmail,
 } from "../utils/emails/sendEmail";
-import jwt, { SignOptions } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { getEnvVariables } from "../config/genEnvVariables";
 import {
   typeForgotPasswordInput,
@@ -36,7 +37,7 @@ const getDateFifteenMinutesFromNow = (): Date => {
 
 export const registerService = async (data: typeRegisterInput) => {
   const alreadyExists = await UserModel.findOne({ email: data.email });
-  if (alreadyExists) throw new BadRequestError("Email already exists");
+  if (alreadyExists) throw new ConflictError("Email already exists");
 
   console.log("register service");
   const hashedPassword = await bcryptjs.hash(data.password, 10);
@@ -52,9 +53,11 @@ export const registerService = async (data: typeRegisterInput) => {
 };
 
 export const loginService = async (data: typeLoginInput) => {
-  const alreadyExists = await UserModel.findOne({ email: data.email });
+  const alreadyExists = await UserModel.findOne({ email: data.email }).select(
+    "password status _id email name"
+  );
   console.log("login service");
-  if (!alreadyExists) throw new UnauthorizedError("User doesn't exist");
+  if (!alreadyExists) throw new NotFoundError("User doesn't exist");
 
   if (alreadyExists.status != "Active") {
     throw new ForbiddenError("You aren't verified");
@@ -67,12 +70,6 @@ export const loginService = async (data: typeLoginInput) => {
 
   if (!isPasswordValid) {
     throw new BadRequestError("Invalid credentials");
-  }
-
-  if (!JWT_SECRET) {
-    throw new BadRequestError(
-      "JWT_SECRET is not defined in environment variables"
-    );
   }
 
   const token = jwt.sign(
@@ -97,11 +94,13 @@ export const verifyEmailService = async ({
     throw new NotFoundError("No such user exists");
   }
 
+  if (user.status === "Active") {
+    throw new BadRequestError("User is already verified.");
+  }
+
   if (user.verificationToken !== code) {
     throw new UnauthorizedError("Invalid verification code.");
   }
-
-  console.log(typeof user.verficationDate);
 
   const currDate = new Date();
   console.log(typeof currDate);
@@ -112,15 +111,12 @@ export const verifyEmailService = async ({
     );
   }
 
-  if (user.status === "Active") {
-    throw new BadRequestError("User is already verified.");
-  }
-
   user.status = "Active";
   user.verificationToken = undefined;
   user.verficationDate = undefined;
 
   await user.save();
+  return true;
 };
 
 export const getMeService = async (userId: string) => {
@@ -148,6 +144,11 @@ export const changePasswordService = async (
   userId: string,
   password: string
 ) => {
+  const user = await UserModel.findById(userId);
+  if (!user) throw new NotFoundError("User not found");
+  if (user.status !== "Active") {
+    throw new ForbiddenError("You aren't verified");
+  }
   const hashedPassword = bcryptjs.hashSync(password, 10);
   const updatePassword = await UserModel.findByIdAndUpdate(
     userId,
@@ -160,6 +161,9 @@ export const changePasswordService = async (
 export const forgotPasswordService = async (data: typeForgotPasswordInput) => {
   const user = await UserModel.findOne({ email: data.email });
   if (!user) throw new NotFoundError("No such user found");
+  if (user.status !== "Active") {
+    throw new ForbiddenError("You aren't verified");
+  }
   const resetToken = getRandomNumber();
   user.resetPasswordToken = resetToken;
   user.resetPasswordExpiresIn = getDateFifteenMinutesFromNow();

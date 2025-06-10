@@ -12,8 +12,8 @@ export const likePostController = async (
     const result = await likeService.likePostService(userId, postId);
     res.status(200).json({
       success: true,
-      data: result,
       message: "Post updated successfully",
+      data: result,
     });
   } catch (error) {
     next(error);
@@ -30,8 +30,8 @@ export const getLikesController = async (
     const result = await likeService.getLikesService(postId);
     res.status(200).json({
       success: true,
-      data: result,
       message: "Likes fetched successfully",
+      data: result,
     });
   } catch (error) {
     next(error);

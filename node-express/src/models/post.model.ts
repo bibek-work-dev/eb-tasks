@@ -1,6 +1,16 @@
 import mongoose from "mongoose";
 
-const postSchema = new mongoose.Schema(
+export interface IPost extends mongoose.Document {
+  _id: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+  title: string;
+  description: string;
+  imageUrl: string;
+  userId: mongoose.Types.ObjectId;
+}
+
+const postSchema = new mongoose.Schema<IPost>(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
@@ -14,6 +24,6 @@ const postSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const PostModel = mongoose.model("Post", postSchema);
+const PostModel = mongoose.model<IPost>("Post", postSchema);
 export default PostModel;
 export type PostDocument = mongoose.InferSchemaType<typeof postSchema>;

@@ -16,8 +16,8 @@ export const getCommentsController = async (
     const comments = await commentService.getCommentsService(postId);
     res.status(200).json({
       success: true,
-      data: comments,
       message: "Comments fetched successfully",
+      data: comments,
     });
   } catch (error: any) {
     next(error);
@@ -39,8 +39,8 @@ export const createCommentController = async (
     );
     res.status(201).json({
       success: true,
-      data: comment,
       message: "Comment created successfully",
+      data: comment,
     });
   } catch (error: any) {
     next(error);
@@ -55,6 +55,7 @@ export const updateCommentController = async (
   try {
     const { commentId } = req.params;
     const userId = req.user.userId;
+    console.log("Updating comment with ID:", commentId, "by userId:", userId);
     const updated = await commentService.updateCommentService(
       userId,
       commentId,
@@ -62,8 +63,8 @@ export const updateCommentController = async (
     );
     res.status(200).json({
       success: true,
-      data: updated,
       message: "Comment updated successfully",
+      data: updated,
     });
   } catch (error: any) {
     next(error);
@@ -84,8 +85,8 @@ export const deleteCommentController = async (
     );
     res.status(200).json({
       success: true,
-      data: deletedComment,
       message: "Comment deleted successfully",
+      data: deletedComment,
     });
   } catch (error: any) {
     next(error);
