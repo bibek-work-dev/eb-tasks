@@ -177,8 +177,11 @@ export const resetPasswordService = async (data: typeResetPasswordInput) => {
     resetPasswordToken: data.code,
     _id: data.userId,
   });
-  console.log("user in hashedPassword", user);
   if (!user) throw new Error("No such user found");
+  if (user?.status !== "Active") {
+    throw new ForbiddenError("You aren't verified");
+  }
+  console.log("user in hashedPassword", user);
   if (
     !user.resetPasswordExpiresIn ||
     user.resetPasswordExpiresIn < new Date()
