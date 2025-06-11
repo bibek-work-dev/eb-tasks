@@ -26,19 +26,21 @@ export default async function requireAuth(
 ): Promise<void> {
   try {
     const authHeaders = req.headers.authorization;
-    console.log("authHeaders", authHeaders);
+    // console.log("authHeaders", authHeaders);
     if (!authHeaders) {
       throw new UnauthorizedError("No authentication Header at all");
     }
     const bearerToken = authHeaders.split(" ");
     const token = bearerToken[1];
+    // console.log("token in reuireAuth", token);
     if (bearerToken[1] !== "Bearer")
       if (!token) throw new UnauthorizedError("Not authorized at all");
     const decodedToken = <typeJwtPayload>await jwt.verify(token, JWT_SECRET);
-    console.log("decodedToken", decodedToken);
+    // console.log("decodedToken", decodedToken);
     if (!decodedToken) {
       throw new UnauthorizedError("Not authorized at all");
     }
+
     req.user = decodedToken;
     next();
   } catch (error: any) {

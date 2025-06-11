@@ -5,6 +5,7 @@ import postRoutes from "./routes/post.route";
 import commentRoutes from "./routes/comment.route";
 import likeRoutes from "./routes/like.route";
 import followerRoutes from "./routes/follower.route";
+import eventRoutes from "./routes/event.route";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use("/api/v1/post", postRoutes);
 app.use("/api/v1/comment", commentRoutes);
 app.use("/api/v1/likes", likeRoutes);
 app.use("/api/v1/followers", followerRoutes);
+app.use("/api/v1/events", eventRoutes);
 
 // bibekkoirala2058
 // eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODQ4ZjNjNzdkMTRlMjQzN2QzNjNiNGUiLCJlbWFpbCI6Ind3dy5iaWJla2tvaXJhbGEyMDU4QGdtYWlsLmNvbSIsImlhdCI6MTc0OTYxMTU3NywiZXhwIjoxNzQ5Njk3OTc3fQ.7yvhuDHtg6NlCr-LREE0rCyNN6s9krdqJg9cyBhCVg4

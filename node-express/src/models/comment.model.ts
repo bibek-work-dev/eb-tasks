@@ -1,4 +1,3 @@
-import e from "express";
 import mongoose from "mongoose";
 
 export interface IComment extends mongoose.Document {

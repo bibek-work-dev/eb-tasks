@@ -40,7 +40,6 @@ const userSchema = new Schema<IUser>(
     followingCount: { type: Number, default: 0 },
     postsCount: { type: Number, default: 0 },
     commentsCount: { type: Number, default: 0 },
-    likesCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

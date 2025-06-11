@@ -6,15 +6,26 @@ import {
 } from "../utils/validations/followerValidationSchema";
 
 export const getFollowersController = async (
-  req: Request,
+  req: Request<
+    { followingId: string },
+    {},
+    {},
+    { limit?: string; page?: string }
+  >,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const { followingId } = req.params;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const page = parseInt(req.query.page as string) || 1;
 
     console.log("followingId in get followers controller", followingId);
-    const result = await followerService.getFollowersService(followingId);
+    const result = await followerService.getFollowersService(
+      page,
+      limit,
+      followingId
+    );
     console.log("result in get followers controller", result);
     res.status(200).json({
       success: true,
@@ -33,7 +44,13 @@ export const getMyFollowRequestsController = async (
 ) => {
   try {
     const userId = req.user.userId;
-    const result = await followerService.getMyFollowRequestsService(userId);
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const result = await followerService.getMyFollowRequestsService(
+      page,
+      limit,
+      userId
+    );
     console.log("result in get follow requests controller", result);
     res.status(200).json({
       success: true,

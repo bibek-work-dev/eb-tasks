@@ -13,7 +13,14 @@ export const getCommentsController = async (
 ) => {
   try {
     const { postId } = req.params;
-    const comments = await commentService.getCommentsService(postId);
+    // implement pagination here
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const comments = await commentService.getCommentsService(
+      page,
+      limit,
+      postId
+    );
     res.status(200).json({
       success: true,
       message: "Comments fetched successfully",

@@ -21,6 +21,7 @@ import {
   typeUpdateProfileInput,
   typeVerifyEmailInput,
 } from "../utils/validations/usersvalidationSchemas";
+import { v4 as uuidv4 } from "uuid";
 
 const JWT_SECRET = getEnvVariables().JWT_SECRET;
 const JWT_EXPIRES_IN = getEnvVariables().JWT_EXPIRESIN || `1d`;
@@ -76,7 +77,15 @@ export const loginService = async (data: typeLoginInput) => {
     {
       userId: alreadyExists._id.toString(),
       email: alreadyExists.email.toString(),
+      jti: uuidv4(),
     },
+    // {
+    //   "userId": "6848f3c77d14e2437d363b4e",
+    //   "email": "www.bibekkoirala2058@gmail.com",
+    //   "jti": "2b4f7e2a-8daf-44d7-b122-812d531bd37a",
+    //   "iat": 1749619879,
+    //   "exp": 1749706279
+    // }
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN as any }
   );

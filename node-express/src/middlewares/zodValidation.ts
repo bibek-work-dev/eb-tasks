@@ -3,11 +3,17 @@ import { ZodSchema } from "zod";
 
 export const zodValidate = <T>(schema: ZodSchema<T>) => {
   return (req: Request, res: Response, next: NextFunction) => {
+    console.log("req. body in zodvalidation", req.body);
     const result = schema.safeParse(req.body);
     if (result.error) {
       console.log("result", result.error.errors);
       const combinedMessage: string = result.error.errors
-        .map((err) => `${err.path.join(".")}: ${err.message}`)
+        .map((err) => {
+          const path = err.path.join(".");
+          // If path is empty (e.g., missing top-level fields), default to generic
+          const label = path || "Field";
+          return `${label}: ${err.message}`;
+        })
         .join(", ");
 
       console.log("combinedMessage", combinedMessage);

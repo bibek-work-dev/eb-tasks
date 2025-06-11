@@ -8,13 +8,15 @@ export interface IPost extends mongoose.Document {
   description: string;
   imageUrl: string;
   userId: mongoose.Types.ObjectId;
+  noOfLikes: number;
 }
 
 const postSchema = new mongoose.Schema<IPost>(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
-    imageUrl: { type: String, required: true },
+    imageUrl: { type: String, required: false },
+    noOfLikes: { type: Number, default: 0 },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

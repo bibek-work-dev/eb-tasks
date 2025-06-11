@@ -2,7 +2,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-import { Request, Response, NextFunction } from "express";
+import { Request } from "express";
 
 const uploadsDir = path.join(__dirname, "..", "..", "..", "uploads");
 if (!fs.existsSync(uploadsDir)) {

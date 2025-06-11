@@ -14,11 +14,12 @@ export interface UploadRequest<
 }
 
 export const getPostController = async (
-  req: Request<{ postId: string }, {}, {}>,
+  req: Request<{ postId: string }, {}, {}, { comment?: string }>,
   res: Response,
   next: NextFunction
 ) => {
   const postId = req.params.postId;
+  const noOfComments = parseInt(req.query.comment as string) || 3;
 
   // const filePath = path.join(__dirname, "..", "..", "uploads");
 
@@ -34,7 +35,7 @@ export const getPostController = async (
 
   // writeAbleStream.on("finish", async () => {
   try {
-    const post = await postService.getPostService(postId);
+    const post = await postService.getPostService(postId, noOfComments);
     res.status(200).json({
       success: true,
       message: "Post fetched successfully",
@@ -51,19 +52,41 @@ export const getPostController = async (
 };
 
 export const getAllPostsController = async (
-  req: Request<{}, {}, {}, { page?: string; limit?: string }>,
+  req: Request<{}, {}, {}, { page?: string; limit?: string; search?: string }>,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const page = parseInt(req.query.page || "1") || 1;
     const limit = parseInt(req.query.limit || "10") || 10;
+
+    const search = req.query.search || "";
     console.log("page", page, "limit", limit);
-    const posts = await postService.getAllPostsService(page, limit);
+    const posts = await postService.getAllPostsService(page, limit, search);
     res.status(200).json({
       success: true,
       message: "All posts fetched successfully",
       data: posts,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUserHomeFeedController = async (
+  req: Request<{}, {}, {}, { page?: string; limit?: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user.userId;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const feeds = await postService.getUserHomeFeedService(userId, page, limit);
+    res.status(200).json({
+      success: true,
+      message: "Feeds fetched successfully",
+      data: feeds,
     });
   } catch (error) {
     next(error);
@@ -89,14 +112,16 @@ export const createPostController = async (
     } else {
       data.imageUrl = "";
     }
-    console.log("data", data), userId;
+    console.log("data", data, userId);
     const post = await postService.createPostService(userId, data);
+    console.log("post", post);
     res.status(201).json({
       success: true,
       message: "Post created successfully",
       data: post,
     });
   } catch (error) {
+    console.log("error");
     next(error);
   }
 };

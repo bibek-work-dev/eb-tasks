@@ -6,7 +6,11 @@ import {
   typeSendFollowRequestSchema,
 } from "../utils/validations/followerValidationSchema";
 
-export const getFollowersService = async (followingId: string) => {
+export const getFollowersService = async (
+  page: number,
+  limit: number,
+  followingId: string
+) => {
   const user = await UserModel.findById(followingId);
   if (!user) {
     throw new NotFoundError("No such user exists");
@@ -14,14 +18,22 @@ export const getFollowersService = async (followingId: string) => {
   const followers = await FollowerModel.find({
     followingId,
     status: "ACCEPTED",
-  });
+  })
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .populate("followerId", "name email");
+
   if (!followers) {
     throw new NotFoundError("No such user exists");
   }
   return followers;
 };
 
-export const getMyFollowRequestsService = async (userId: string) => {
+export const getMyFollowRequestsService = async (
+  page: number,
+  limit: number,
+  userId: string
+) => {
   const user = await UserModel.findById(userId);
   if (!user) {
     throw new NotFoundError("No such user exists");
@@ -112,5 +124,18 @@ export const respondToFollowRequestService = async (
     followRequest
   );
   await followRequest.save();
+  // increment the follower count oif the user being followed if status is ACCEPTED
+  if (status === "ACCEPTED") {
+    await UserModel.findByIdAndUpdate(
+      followerId,
+      { $inc: { followersCount: 1 } },
+      { new: true }
+    );
+    await UserModel.findByIdAndUpdate(
+      userId,
+      { $inc: { followingCount: 1 } },
+      { new: true }
+    );
+  }
   return followRequest;
 };

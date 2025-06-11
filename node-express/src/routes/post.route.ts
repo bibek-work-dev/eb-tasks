@@ -15,19 +15,25 @@ postRoutes.get("/get/:postId", postController.getPostController);
 
 postRoutes.get("/get-all", postController.getAllPostsController);
 
+postRoutes.get(
+  "/get-home-feed",
+  requireAuth,
+  postController.getUserHomeFeedController
+);
+
 postRoutes.post(
   "/create",
   requireAuth,
-  zodValidate(createPostSchema),
   upload.single("image"),
+  zodValidate(createPostSchema),
   postController.createPostController
 );
 
 postRoutes.patch(
   "/update/:postId",
-  zodValidate(updatePostSchema),
   requireAuth,
   upload.single("image"),
+  zodValidate(updatePostSchema),
   postController.updatePostController
 );
 

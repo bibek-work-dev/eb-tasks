@@ -1,23 +1,40 @@
 import CommentModel from "../models/comment.model";
 import PostModel from "../models/post.model";
 import { InternalSeverError, NotFoundError } from "../utils/ErrorHandler";
+
 import {
   typeCreateCommentInput,
   typeUpdateCommentInput,
 } from "../utils/validations/commentValidationSchema";
 
-export const getCommentsService = async (postId: string) => {
+export const getCommentsService = async (
+  page: number,
+  limit: number,
+  postId: string
+) => {
   const post = await PostModel.findById(postId);
+
   if (!post) {
     throw new NotFoundError("Post not found");
   }
+
   const comments = await CommentModel.find({ postId })
     .populate("userId", "name email")
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
+
+  const totalComments = await CommentModel.countDocuments({ postId });
+  const totalPages = Math.ceil(totalComments / limit);
   if (!comments) {
     throw new NotFoundError("Comments not found for this post");
   }
-  return comments;
+  return {
+    currentPage: page,
+    totalPages,
+    totalComments,
+    comments,
+  };
 };
 
 export const createCommentService = async (

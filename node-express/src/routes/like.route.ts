@@ -5,7 +5,7 @@ import * as likeController from "../controllers/like.controller";
 
 const likeRoutes = express.Router();
 
-likeRoutes.patch("/:postId", requireAuth, likeController.likePostController);
+likeRoutes.post("/:postId", requireAuth, likeController.likePostController);
 
 likeRoutes.get("/get-likes/:postId", likeController.getLikesController);
 
