@@ -21,6 +21,23 @@ export const getFollowersService = async (followingId: string) => {
   return followers;
 };
 
+export const getMyFollowRequestsService = async (userId: string) => {
+  const user = await UserModel.findById(userId);
+  if (!user) {
+    throw new NotFoundError("No such user exists");
+  }
+  const followRequests = await FollowerModel.find({
+    followingId: userId,
+    status: "REQUESTED",
+  }).populate("followerId", "name email");
+
+  if (!followRequests) {
+    throw new NotFoundError("No follow requests found");
+  }
+
+  return followRequests;
+};
+
 export const sendFollowRequestService = async (
   userId: string,
   data: typeSendFollowRequestSchema

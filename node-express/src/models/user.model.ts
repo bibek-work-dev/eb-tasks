@@ -16,6 +16,11 @@ export interface IUser {
   createdAt: Date;
   updatedAt: Date;
   _id: mongoose.Types.ObjectId;
+  followersCount: number;
+  followingCount: number;
+  postsCount: number;
+  commentsCount: number;
+  likesCount: number;
 }
 
 const userSchema = new Schema<IUser>(
@@ -31,6 +36,11 @@ const userSchema = new Schema<IUser>(
     verficationDate: { type: Date },
     resetPasswordToken: { type: String },
     resetPasswordExpiresIn: { type: Date },
+    followersCount: { type: Number, default: 0 },
+    followingCount: { type: Number, default: 0 },
+    postsCount: { type: Number, default: 0 },
+    commentsCount: { type: Number, default: 0 },
+    likesCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

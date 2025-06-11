@@ -16,6 +16,12 @@ followerRoutes.get(
   followerController.getFollowersController
 );
 
+followerRoutes.get(
+  "/get-follow-requests",
+  requireAuth,
+  followerController.getMyFollowRequestsController
+);
+
 followerRoutes.patch(
   "/send-follow-request",
   requireAuth,

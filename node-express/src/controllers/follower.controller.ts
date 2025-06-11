@@ -26,6 +26,25 @@ export const getFollowersController = async (
   }
 };
 
+export const getMyFollowRequestsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user.userId;
+    const result = await followerService.getMyFollowRequestsService(userId);
+    console.log("result in get follow requests controller", result);
+    res.status(200).json({
+      success: true,
+      message: "Follow requests fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const sendFollowRequestController = async (
   req: Request<{}, {}, typeSendFollowRequestSchema>,
   res: Response,
