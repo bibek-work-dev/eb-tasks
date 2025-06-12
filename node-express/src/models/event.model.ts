@@ -8,6 +8,7 @@ export interface IEvent extends Document {
   participants: mongoose.Types.ObjectId[];
   eventCreatedBy: mongoose.Types.ObjectId;
   noOfParticipants: number;
+  emailRemainderSent: boolean;
 }
 
 const eventSchema = new Schema<IEvent>(
@@ -19,6 +20,7 @@ const eventSchema = new Schema<IEvent>(
     eventCreatedBy: { type: Schema.Types.ObjectId, ref: "User" },
     participants: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
     noOfParticipants: { type: Number, default: 0 },
+    emailRemainderSent: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

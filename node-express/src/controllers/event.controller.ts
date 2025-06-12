@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import * as eventService from "../services/event.service";
 import { typeCreateEventSchema } from "../utils/validations/eventsValidationSchema";
+import cron from "node-cron";
 
 export const createEventController = async (
   req: Request<{}, {}, typeCreateEventSchema>,
@@ -54,6 +55,28 @@ export const participateEventController = async (
     res.status(200).json({
       success: true,
       message: "Joined event",
+      data: updatedEvent,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const withDrawFromEventController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const eventId = req.params.eventId;
+    const userId = req.user.userId;
+    const updatedEvent = await eventService.withDrawFromEventService(
+      userId,
+      eventId
+    );
+    res.status(200).json({
+      success: true,
+      message: "Successfully Withdrawn from event",
       data: updatedEvent,
     });
   } catch (error) {

@@ -1,7 +1,12 @@
 import CommentModel from "../models/comment.model";
 import FollowerModel from "../models/followers.model";
 import PostModel from "../models/post.model";
-import { ForbiddenError, NotFoundError } from "../utils/ErrorHandler";
+import UserModel from "../models/user.model";
+import {
+  ForbiddenError,
+  InternalSeverError,
+  NotFoundError,
+} from "../utils/ErrorHandler";
 import {
   typeCreatePostSchema,
   typeUpdatePostSchema,
@@ -91,7 +96,11 @@ export const createPostService = async (
   data: typeCreatePostSchema
 ) => {
   console.log("data and userId in createPostService", data, userId);
-  return PostModel.create({ ...data, userId });
+  const post = PostModel.create({ ...data, userId });
+  if (!post) throw new InternalSeverError();
+  const noOfPostByUser = await PostModel.countDocuments({ userId });
+  await UserModel.findByIdAndUpdate(userId, { postsCount: noOfPostByUser });
+  return post;
 };
 
 export const updatePostService = async (
@@ -135,6 +144,9 @@ export const deletePostService = async (userId: string, postId: string) => {
   }
 
   await PostModel.findByIdAndDelete(postId);
+
+  const noOfPostByUser = await PostModel.countDocuments({ userId });
+  await UserModel.findByIdAndUpdate(userId, { postsCount: noOfPostByUser });
 
   return post;
 };

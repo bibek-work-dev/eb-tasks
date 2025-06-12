@@ -19,4 +19,10 @@ eventRoutes.patch(
   eventController.participateEventController
 );
 
+eventRoutes.patch(
+  "/withdraw/:eventId",
+  requireAuth,
+  eventController.withDrawFromEventController
+);
+
 export default eventRoutes;

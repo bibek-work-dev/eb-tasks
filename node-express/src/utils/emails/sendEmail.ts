@@ -62,3 +62,34 @@ export const sendResetPasswordEmail = async (
 
   console.log("Reset password email sent:", nodemailer.getTestMessageUrl(info));
 };
+
+export const sendEventRemainderEmail = async (event: any): Promise<void> => {
+  const { title, startDate } = event;
+  console.log("events", event);
+  const emails = event.participants.map((each: any) => each.email);
+  console.log("emails", emails);
+  const mailOptions = {
+    from: '"Bibek - Event Reminder" <bibek.koirala.ebpearls@gmail.com>',
+    to: emails.join(", "),
+    subject: `Reminder: Your event "${title}" starts soon!`,
+    text: `Hello,
+
+This is a reminder that your event "${title}" is scheduled to start at ${startDate.toLocaleString()}.
+
+See you soon!
+- Task App Team`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+        <h2>Event Reminder</h2>
+        <p>Hello,</p>
+        <p>This is a reminder that your event <strong>${title}</strong> is starting at:</p>
+        <p><strong>${startDate.toLocaleString()}</strong></p>
+        <p>See you there!</p>
+        <p>- Task App Team</p>
+      </div>
+    `,
+  };
+
+  const info = await transporter.sendMail(mailOptions);
+  console.log("Event reminder email sent:", info.messageId);
+};

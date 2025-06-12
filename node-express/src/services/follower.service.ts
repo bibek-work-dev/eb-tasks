@@ -128,12 +128,12 @@ export const respondToFollowRequestService = async (
   if (status === "ACCEPTED") {
     await UserModel.findByIdAndUpdate(
       followerId,
-      { $inc: { followersCount: 1 } },
+      { $inc: { followingCount: 1 } },
       { new: true }
     );
     await UserModel.findByIdAndUpdate(
       userId,
-      { $inc: { followingCount: 1 } },
+      { $inc: { followersCount: 1 } },
       { new: true }
     );
   }

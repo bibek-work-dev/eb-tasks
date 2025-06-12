@@ -6,11 +6,14 @@ import commentRoutes from "./routes/comment.route";
 import likeRoutes from "./routes/like.route";
 import followerRoutes from "./routes/follower.route";
 import eventRoutes from "./routes/event.route";
+import { emailJob } from "./jobs/email.job";
 
 const app = express();
 
 // middlewares
 app.use(express.json());
+
+emailJob();
 
 // Routes
 app.use("/api/v1/user", userRoutes);
