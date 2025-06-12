@@ -76,8 +76,8 @@ export const getMeController: RequestHandler = async (
     const user = await userService.getMeService(userId);
     res.status(200).json({
       success: true,
-      data: user,
       message: "user fetched successfully",
+      data: user,
     });
   } catch (error) {
     next(error);
@@ -158,11 +158,12 @@ export const logoutController: RequestHandler = async (
   next: NextFunction
 ) => {
   try {
-    const result = await userService.logoutService();
+    const jti = req.user.jti;
+    const result = await userService.logoutService(jti);
     res.status(200).json({
       success: true,
       message: "You have been successfully logged Out.",
-      data: null,
+      data: result,
     });
   } catch (error) {
     next(error);

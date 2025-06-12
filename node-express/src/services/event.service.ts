@@ -14,7 +14,8 @@ export const listEventsService = async (page: number, limit: number) => {
   const events = await EventModel.find()
     .sort({ startDate: 1 })
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .populate("eventCreatedBy", "name email");
   const totalEvents = await EventModel.countDocuments();
 
   const totalPages = Math.ceil(totalEvents / limit);

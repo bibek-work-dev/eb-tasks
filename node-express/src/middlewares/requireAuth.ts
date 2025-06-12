@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { getEnvVariables } from "../config/genEnvVariables";
-import { UnauthorizedError } from "../utils/ErrorHandler";
+import { ConflictError, UnauthorizedError } from "../utils/ErrorHandler";
 import { typeJwtPayload } from "../types/jwt";
+import JtiModel from "../models/jti.model";
 
 // export interface typeJwtPayload {
 //   userId: string;
@@ -40,6 +41,12 @@ export default async function requireAuth(
     if (!decodedToken) {
       throw new UnauthorizedError("Not authorized at all");
     }
+
+    const { jti } = decodedToken;
+    const doesJtiExists = await JtiModel.findOne({ jti });
+
+    if (!doesJtiExists)
+      throw new ConflictError("You can't use the same token after logged out");
 
     req.user = decodedToken;
     next();

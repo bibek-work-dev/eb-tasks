@@ -60,6 +60,6 @@ userRoutes.patch(
   userController.changePasswordController
 );
 
-userRoutes.get("/logout", userController.logoutController);
+userRoutes.get("/logout", requireAuth, userController.logoutController);
 
 export default userRoutes;

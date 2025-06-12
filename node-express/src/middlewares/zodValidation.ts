@@ -3,8 +3,8 @@ import { ZodSchema } from "zod";
 
 export const zodValidate = <T>(schema: ZodSchema<T>) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    console.log("req. body in zodvalidation", req.body);
     const result = schema.safeParse(req.body);
+    console.log("req. body in zodvalidation", result);
     if (result.error) {
       console.log("result", result.error.errors);
       const combinedMessage: string = result.error.errors

@@ -22,6 +22,7 @@ import {
   typeVerifyEmailInput,
 } from "../utils/validations/usersvalidationSchemas";
 import { v4 as uuidv4 } from "uuid";
+import JtiModel from "../models/jti.model";
 
 const JWT_SECRET = getEnvVariables().JWT_SECRET;
 const JWT_EXPIRES_IN = getEnvVariables().JWT_EXPIRESIN || `1d`;
@@ -73,22 +74,19 @@ export const loginService = async (data: typeLoginInput) => {
     throw new BadRequestError("Invalid credentials");
   }
 
+  const jti = uuidv4();
+
   const token = jwt.sign(
     {
       userId: alreadyExists._id.toString(),
       email: alreadyExists.email.toString(),
-      jti: uuidv4(),
+      jti: jti,
     },
-    // {
-    //   "userId": "6848f3c77d14e2437d363b4e",
-    //   "email": "www.bibekkoirala2058@gmail.com",
-    //   "jti": "2b4f7e2a-8daf-44d7-b122-812d531bd37a",
-    //   "iat": 1749619879,
-    //   "exp": 1749706279
-    // }
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN as any }
   );
+
+  await JtiModel.create({ jti });
 
   return { token, user: alreadyExists };
 };
@@ -144,9 +142,15 @@ export const updateProfileService = async (
   return updatedUser;
 };
 
-export const logoutService = async () => {
+export const logoutService = async (jti: string) => {
+  const removedzJti = await JtiModel.findOneAndDelete({ jti });
+  console.log("removedzJti", removedzJti);
+  if (!removedzJti) {
+    throw new NotFoundError("Something went wrong");
+  }
+
   // client le garxa afai remove
-  return true;
+  return removedzJti;
 };
 
 export const changePasswordService = async (
