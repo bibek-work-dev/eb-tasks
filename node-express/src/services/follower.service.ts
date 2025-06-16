@@ -1,4 +1,5 @@
 import FollowerModel from "../models/followers.model";
+import NotificationModel from "../models/notifications.model";
 import UserModel from "../models/user.model";
 import { ConflictError, NotFoundError } from "../utils/ErrorHandler";
 import {
@@ -41,7 +42,10 @@ export const getMyFollowRequestsService = async (
   const followRequests = await FollowerModel.find({
     followingId: userId,
     status: "REQUESTED",
-  }).populate("followerId", "name email");
+  })
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .populate("followerId", "name email");
 
   if (!followRequests) {
     throw new NotFoundError("No follow requests found");
@@ -80,6 +84,13 @@ export const sendFollowRequestService = async (
   });
 
   await newFollowRequest.save();
+
+  await NotificationModel.create({
+    recipient: followingId,
+    sender: userId,
+    type: "FOLLOW_REQUEST",
+    message: "You have a new follow request",
+  });
 
   return newFollowRequest;
 };

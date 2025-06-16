@@ -1,4 +1,5 @@
 import CommentModel from "../models/comment.model";
+import NotificationModel from "../models/notifications.model";
 import PostModel from "../models/post.model";
 import { InternalSeverError, NotFoundError } from "../utils/ErrorHandler";
 
@@ -62,6 +63,15 @@ export const createCommentService = async (
   if (!comment) {
     throw new InternalSeverError();
   }
+
+  await NotificationModel.create({
+    recipient: post.userId,
+    sender: userId,
+    post: post._id,
+    type: "COMMENT",
+    message: "Someone commented on your post",
+  });
+
   return comment;
 };
 

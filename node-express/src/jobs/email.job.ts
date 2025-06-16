@@ -6,6 +6,7 @@ import { sendEventRemainderEmail } from "../utils/emails/sendEmail";
 
 export const emailJob = () => {
   console.log("starting the email job");
+
   cron.schedule("*/10 * * * * *", async () => {
     console.log("cron-jobs is running");
     const now = new Date();

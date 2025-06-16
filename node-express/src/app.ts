@@ -7,6 +7,7 @@ import likeRoutes from "./routes/like.route";
 import followerRoutes from "./routes/follower.route";
 import eventRoutes from "./routes/event.route";
 import { emailJob } from "./jobs/email.job";
+import notificationRoutes from "./routes/notification.route";
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use("/api/v1/comment", commentRoutes);
 app.use("/api/v1/likes", likeRoutes);
 app.use("/api/v1/followers", followerRoutes);
 app.use("/api/v1/events", eventRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
 
 app.use(errorMiddleware as ErrorRequestHandler);
 
