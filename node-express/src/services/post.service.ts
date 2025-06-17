@@ -14,18 +14,27 @@ import {
 
 export const getPostService = async (postId: string, noOfComments: number) => {
   console.log("Fetching post with ID:", postId);
-  const post = await PostModel.findById(postId);
+  const post: any = await PostModel.findById(postId);
   if (!post) {
     throw new NotFoundError("Post not found");
   }
   const comments = await CommentModel.find({ postId })
-    .populate("userId", "name email")
+    .populate({
+      path: "post",
+      select: "name email",
+    })
     .sort({ createdAt: -1 })
     .limit(noOfComments);
   if (!comments) {
     throw new NotFoundError("Comments not founds");
   }
-  return { ...post, comments: comments };
+
+  // comment -> post -> author
+
+  return {
+    ...post._doc,
+    comments: comments,
+  };
 };
 
 export const getAllPostsService = async (
