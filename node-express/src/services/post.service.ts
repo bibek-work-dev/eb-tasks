@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import CommentModel from "../models/comment.model";
 import FollowerModel from "../models/followers.model";
 import PostModel from "../models/post.model";
@@ -14,18 +15,33 @@ import {
 
 export const getPostService = async (postId: string, noOfComments: number) => {
   console.log("Fetching post with ID:", postId);
-  const post = await PostModel.findById(postId);
+  const post: any = (
+    await PostModel.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(postId) },
+      },
+    ])
+  )[0];
+
+  console.log("post in post", post);
   if (!post) {
     throw new NotFoundError("Post not found");
   }
   const comments = await CommentModel.find({ postId })
-    .populate("userId", "name email")
+    .populate({
+      path: "post",
+      select: "name email",
+    })
     .sort({ createdAt: -1 })
     .limit(noOfComments);
   if (!comments) {
     throw new NotFoundError("Comments not founds");
   }
-  return { ...post, comments: comments };
+
+  return {
+    ...post._doc,
+    comments: comments,
+  };
 };
 
 export const getAllPostsService = async (
