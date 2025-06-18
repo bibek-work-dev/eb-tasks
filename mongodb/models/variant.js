@@ -11,10 +11,11 @@ const variantSchema = new mongoose.Schema(
     discountedAmount: { type: Number },
   },
   {
+    _id: false,
     timestamps: true,
   }
 );
 
-const VariantModel = mongoose.model("Variant", variantSchema);
+// const VariantModel = mongoose.model("Variant", variantSchema);
 
-module.exports = VariantModel;
+module.exports = variantSchema;

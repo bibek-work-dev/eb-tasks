@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const variantSchema = require("./variant");
 
 const productSchema = new mongoose.Schema(
   {
@@ -16,10 +17,7 @@ const productSchema = new mongoose.Schema(
     categoryName: {
       type: String,
     },
-    price: {
-      type: Number,
-    },
-    // yo chai computed property
+    // yo chai computed and subset prooperty
     reviewDetails: {
       recentReviews: {
         type: reviewSchema,
@@ -30,13 +28,16 @@ const productSchema = new mongoose.Schema(
         default: 0,
       },
       averageRating: {
-        // computed property
         type: Number,
         default: 0,
       },
     },
     discount: {
       type: Number,
+    },
+    variant: {
+      type: [variantSchema],
+      default: [],
     },
   },
   {
