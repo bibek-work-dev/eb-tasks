@@ -11,6 +11,7 @@ const reviewSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    noOfLikes: { type: Number, default: 0 },
     username: { type: String, required: true },
     comment: { type: String, required: true },
     rating: { type: Number, required: true, min: 1, max: 5 },

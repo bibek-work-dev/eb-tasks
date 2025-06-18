@@ -3,7 +3,10 @@ const variantSchema = require("./variant");
 
 const productSchema = new mongoose.Schema(
   {
-    name: {
+    title: {
+      type: String,
+    },
+    description: {
       type: String,
     },
     rating: {
@@ -31,9 +34,6 @@ const productSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
-    },
-    discount: {
-      type: Number,
     },
     variant: {
       type: [variantSchema],
