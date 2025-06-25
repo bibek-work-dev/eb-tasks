@@ -3,6 +3,9 @@ import { Module } from '@nestjs/common';
 import { CatsModule } from './cats/cats.module';
 import { UserModule } from './users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { OrdersModule } from './orders/orders.module';
+import { ProductsModule } from './products/products.module';
+import { PurchasedModule } from './purchased/purchased.module';
 
 @Module({
   imports: [
@@ -11,6 +14,9 @@ import { MongooseModule } from '@nestjs/mongoose';
     ),
     CatsModule,
     UserModule,
+    OrdersModule,
+    ProductsModule,
+    PurchasedModule,
   ],
   controllers: [],
   providers: [],

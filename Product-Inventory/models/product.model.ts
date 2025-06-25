@@ -1,31 +1,30 @@
 import mongoose, { Schema } from "mongoose";
 
-// 🔄 Variant Type (Optional, if needed)
-// Variant {
-//   name: string            // "Color" or "Size"
-//   value: string           // "Red" or "XL"
-//   stockQuantity: number   // Optional, per variant stock
-//   priceDifference?: number
-// }
-
-// 🗂 Optional: Category Schema
-// Category {
-//   _id: ObjectId
-//   name: string               // "Electronics"
-//   parentCategoryId?: ObjectId // For nesting
-//   defaultAttributes?: string[] // ["color", "model", "screenSize"]
-// }
-
 const productSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
     images: [{ type: String }],
-    price: { type: Number },
+    costPrice: { type: Number, required: true },
+    sellingPrice: { type: Number, required: true },
     categoryId: { type: Schema.Types.ObjectId, ref: "Category" },
-    categoryName: { type: String },
-    description: { type: String },
-    stock: { type: String },
-    unit: { type: String, required: true },
+    categoryName: { type: String, required: true },
+    description: { type: String, required: true },
+    stockQuantity: { type: Number, default: 0, required: true },
+    unit: { type: String, required: true }, // kg, liter ho ki k ho ?
+    variants: [
+      {
+        name: String,
+        value: String,
+        stockQuantity: Number,
+        priceDifference: Number,
+        totalPrice: Number,
+      },
+    ],
+    attributes: {
+      types: Schema.Types.Mixed,
+      default: {},
+    },
+    reorderLevel: { type: Number, default: 20 },
   },
   { timestamps: true }
 );

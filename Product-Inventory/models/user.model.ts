@@ -9,6 +9,7 @@ const userSchema = new Schema(
     email: {
       type: String,
       required: true,
+      unique: true,
     },
     password: {
       type: String,
@@ -18,6 +19,10 @@ const userSchema = new Schema(
       type: String,
       enum: ["USER", "ADMIN"],
       default: "USER",
+    },
+    lastLogin: {
+      type: Date,
+      required: false,
     },
   },
   { timestamps: true }
