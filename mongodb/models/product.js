@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const variantSchema = require("./variant");
+const { categorySchema } = require("./category");
 
 const productSchema = new mongoose.Schema(
   {
@@ -12,28 +13,27 @@ const productSchema = new mongoose.Schema(
     rating: {
       type: Number,
     },
-    category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-      required: true,
+    categories: [
+      {
+        category: {
+          type: mongoose.Types.ObjectId,
+          ref: "Category",
+          categoryName: { type: String, required: true },
+        },
+        categoryName: { type: String, required: true },
+      },
+    ],
+    totalReviews: {
+      type: Number,
+      default: 0,
     },
-    categoryName: {
-      type: String,
+    averageRating: {
+      type: Number,
+      default: 0,
     },
-    // yo chai computed and subset prooperty
-    reviewDetails: {
-      recentReviews: {
-        type: reviewSchema,
-        default: [],
-      },
-      totalReviews: {
-        type: Number,
-        default: 0,
-      },
-      averageRating: {
-        type: Number,
-        default: 0,
-      },
+    recentReviews: {
+      type: reviewSchema,
+      default: [],
     },
     variant: {
       type: [variantSchema],

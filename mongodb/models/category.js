@@ -1,9 +1,11 @@
-const categorySchema = new mongoose.Schema(
+exports.categorySchema = new mongoose.Schema(
   {
-    name: { type: String },
+    category: { type: String },
     description: { type: String },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 const CategoryModel = mongoose.model("Category", categorySchema);
