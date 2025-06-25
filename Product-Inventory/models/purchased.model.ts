@@ -11,16 +11,20 @@ const purchasedSchema = new Schema(
           ref: "Product",
           required: true,
         },
+        // variantId: { type: Schema.Types.ObjectId, required: false },
         quantity: { type: Number, required: true },
-        unitCost: { type: Number, required: true },
+        unitCost: { type: Number, required: true }, // cost Price in Product
         totalCost: { type: Number, required: true },
       },
     ],
     purchaseDate: { type: Date, default: Date.now },
     note: { type: String },
+    vendor: { type: String },
   },
   { timestamps: true }
 );
+
+// you should increase the product actually.
 
 export type PurchasedDocument = mongoose.InferSchemaType<
   typeof purchasedSchema

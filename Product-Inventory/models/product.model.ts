@@ -9,17 +9,17 @@ const productSchema = new Schema(
     categoryId: { type: Schema.Types.ObjectId, ref: "Category" },
     categoryName: { type: String, required: true },
     description: { type: String, required: true },
-    stockQuantity: { type: Number, default: 0, required: true },
+    totalStockQuantity: { type: Number, default: 0, required: true },
     unit: { type: String, required: true }, // kg, liter ho ki k ho ?
-    variants: [
-      {
-        name: String,
-        value: String,
-        stockQuantity: Number,
-        priceDifference: Number,
-        totalPrice: Number,
-      },
-    ],
+    // variants: [
+    //   {
+    //     name: String,
+    //     value: String,
+    //     stockQuantity: Number,
+    //     priceDifference: Number,
+    //     totalPrice: Number,
+    //   },
+    // ],
     attributes: {
       types: Schema.Types.Mixed,
       default: {},
