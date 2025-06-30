@@ -4,6 +4,7 @@ import { gql } from "graphql-tag";
 import cors from "cors";
 import { expressMiddleware } from "@apollo/server/express4";
 import connectToDB from "./dbConnect/dbConnect.js";
+import { UserModel } from "./models/user.model.js";
 
 const PORT = 3000;
 
@@ -74,16 +75,18 @@ const resolvers = {
     },
   },
   Mutation: {
-    createUser: (_: unknown, { input }: { input: CreateUserInput }) => {
+    createUser: async (
+      _: unknown,
+      { input }: { input: CreateUserInput }
+    ): Promise<any> => {
       const { name, email } = input;
       console.log("input in createUser", input);
       const newUser = {
-        id: Number(users.length + 1),
         name,
         email,
       };
-      users.push(newUser);
-      return newUser;
+      const createdUser = await UserModel.create(newUser);
+      return createdUser;
     },
     updateUser: (_: unknown, { input }: { input: UpdateUserInput }) => {
       const { id, name, email } = input;
