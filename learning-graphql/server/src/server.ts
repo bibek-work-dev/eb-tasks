@@ -3,7 +3,8 @@ import { ApolloServer } from "@apollo/server";
 import { gql } from "graphql-tag";
 import cors from "cors";
 import { expressMiddleware } from "@apollo/server/express4";
-import { ExpressContextFunctionArgument } from "@apollo/server/express4";
+import connectToDB from "./dbConnect/dbConnect.js";
+
 const PORT = 3000;
 
 type CreateUserInput = Omit<TypeUser, "id">;
@@ -75,6 +76,7 @@ const resolvers = {
   Mutation: {
     createUser: (_: unknown, { input }: { input: CreateUserInput }) => {
       const { name, email } = input;
+      console.log("input in createUser", input);
       const newUser = {
         id: Number(users.length + 1),
         name,
@@ -109,7 +111,9 @@ async function startServer() {
     resolvers,
   });
 
-  await server.start();
+  await connectToDB();
+
+  await await server.start();
   app.use("/graphql", cors(), express.json(), expressMiddleware(server));
 
   app.listen(PORT, () => {
