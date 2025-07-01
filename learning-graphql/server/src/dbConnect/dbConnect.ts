@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
 
-const MONGO_URI =
-  "mongodb+srv://root:root@cluster0.pk7jrn5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-
+const MONGO_URI = process.env.MONGO_URI;
 async function connectToDB() {
   try {
+    if (!MONGO_URI) {
+      throw new Error("Something went wrong");
+    }
     await mongoose.connect(MONGO_URI);
     console.log("MongoDB connected");
   } catch (err) {

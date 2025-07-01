@@ -1,13 +1,12 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, InferSchemaType } from "mongoose";
 
-interface IUser extends Document {
-  name: string;
-  email: string;
-}
-
-const userSchema = new Schema<IUser>({
+const userSchema = new Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ["USER", "ADMIN"], default: "USER" },
 });
 
-export const UserModel = model<IUser>("User", userSchema);
+export type UserDocument = InferSchemaType<typeof userSchema>;
+
+export const UserModel = model("User", userSchema);
