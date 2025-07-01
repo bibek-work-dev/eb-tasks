@@ -47,8 +47,8 @@ export const userTypeDefs = gql`
   }
 
   type Mutation {
-    register(input: RegisterInput!): AuthPayload!
-    login(input: LoginInput!): AuthPayload!
+    register(input: RegisterInput!): RegisterResponse!
+    login(input: LoginInput!): LoginResponse!
     updateUser(input: UpdateUserInput!): User!
     deleteUser(input: DeleteUserInput!): User
   }
