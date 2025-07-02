@@ -12,16 +12,13 @@ export const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 character"),
 });
 
-export const updateSchema = registerSchema
-  .extend({ id: z.string() })
-  .omit({ email: true })
-  .partial();
+export const updateSchema = registerSchema.omit({ email: true }).partial();
 
 export const deleteSchema = z.object({
   id: z.string(),
 });
 
-export type RegisterInput = z.infer<typeof registerSchema>;
-export type LoginInput = z.infer<typeof loginSchema>;
-export type UpdateInput = z.infer<typeof updateSchema>;
-export type DeleteInput = z.infer<typeof deleteSchema>;
+export type TypeRegisterInput = z.infer<typeof registerSchema>;
+export type TypeLoginInput = z.infer<typeof loginSchema>;
+export type TypeUpdateInput = z.infer<typeof updateSchema>;
+export type TypeDeleteInput = z.infer<typeof deleteSchema>;

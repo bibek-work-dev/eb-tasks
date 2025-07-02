@@ -1,43 +1,24 @@
-import { GraphQLError } from "graphql";
+import { GraphQLError, GraphQLResolveInfo } from "graphql";
 import { UserModel } from "../../models/user.model.js";
 import bcrypt from "bcrypt";
-import {
-  CreateUserInput,
-  DeleteUserInput,
-  UpdateUserInput,
-} from "../../types/user.types.js";
 import { PostModel } from "../../models/post.model.js";
 import { signJwt } from "../../utils/jwt.js";
 import {
-  DeleteInput,
   deleteSchema,
-  LoginInput,
   loginSchema,
-  RegisterInput,
   registerSchema,
-  UpdateInput,
+  TypeDeleteInput,
+  TypeLoginInput,
+  TypeRegisterInput,
+  TypeUpdateInput,
   updateSchema,
 } from "../../validations/user.validation.js";
-
-type RegisterArgs = {
-  input: RegisterInput;
-};
-
-type LoginArgs = {
-  input: LoginInput;
-};
-
-type UpdateArgs = {
-  input: UpdateInput;
-};
-
-type DeleteArgs = {
-  input: DeleteInput;
-};
-
-type GetUser = {
-  id: string;
-};
+import requireAuth from "../../middlewares/requireauth.middleware.js";
+import { TypeMyContext } from "../../server.js";
+import {
+  ensureUserExistAndReturnUserIfExists,
+  validateInput,
+} from "../../utils/helpers.js";
 
 export const userResolvers = {
   Query: {
@@ -45,10 +26,16 @@ export const userResolvers = {
       //   console.log("in users", parent, args, context, info);
       return await UserModel.find();
     },
-    user: async (parent: any, args: GetUser, context: any, info: any) => {
+    user: async (
+      parent: any,
+      args: { id: string },
+      context: any,
+      info: any
+    ) => {
       //   console.log("parent:", parent);
       console.log("args:", args);
       console.log("context:", context);
+      requireAuth(context);
       //   console.log("info:", info);
       return await UserModel.findById(args.id);
     },
@@ -56,38 +43,34 @@ export const userResolvers = {
   Mutation: {
     register: async (
       parent: unknown,
-      args: RegisterArgs,
+      args: { input: TypeRegisterInput },
       context: unknown,
-      _info: unknown
+      _info: GraphQLResolveInfo
     ) => {
-      const parsed = registerSchema.safeParse(args.input);
-      if (!parsed.success) {
-        const message = parsed.error.errors.map((e) => e.message).join(", ");
-        throw new GraphQLError("Validation Error: " + message);
-      }
-      const { name, email, password, role } = args.input;
+      const parsed = validateInput(registerSchema, args.input);
+      const { name, email, password, role } = parsed;
       const existing = await UserModel.findOne({ email });
       if (existing)
         throw new GraphQLError("Email already registered", {
           extensions: { code: "BAD_USER_INPUT" },
         });
       const hashed = await bcrypt.hash(password, 10);
-      const user = await UserModel.create({ name, email, password: hashed });
-
+      const user = await UserModel.create({
+        name,
+        role,
+        email,
+        password: hashed,
+      });
       return { message: "You are succesfully registered!!" };
     },
     login: async (
       parent: unknown,
-      args: LoginArgs,
+      args: { input: TypeLoginInput },
       context: unknown,
-      _info: unknown
+      _info: GraphQLResolveInfo
     ) => {
-      const parsed = loginSchema.safeParse(args.input);
-      if (!parsed.success) {
-        const message = parsed.error.errors.map((e) => e.message).join(", ");
-        throw new GraphQLError("Validation Error: " + message);
-      }
-      const { email, password } = args.input;
+      const parsed = validateInput(loginSchema, args.input);
+      const { email, password } = parsed;
       const user = await UserModel.findOne({ email });
       if (!user)
         throw new GraphQLError("No such user found", {
@@ -99,46 +82,37 @@ export const userResolvers = {
           extensions: { code: "BAD_USER_INPUT" },
         });
 
-      const token = signJwt({ _id: user.id, email: user.email });
+      const token = signJwt({
+        _id: user.id,
+        role: user.role,
+        email: user.email,
+      });
       return { token, user };
     },
     updateUser: async (
       parent: unknown,
-      args: UpdateArgs,
-      context: unknown,
-      info: unknown
+      args: { input: TypeUpdateInput },
+      context: TypeMyContext,
+      info: GraphQLResolveInfo
     ) => {
-      const parsed = updateSchema.safeParse(args.input);
-      if (!parsed.success) {
-        const message = parsed.error.errors.map((e) => e.message).join(", ");
-        throw new GraphQLError("Validation Error: " + message);
-      }
-      const { id, name, role } = args.input;
-
-      const toBeUpdatedUser = await UserModel.findById(id);
-      if (!toBeUpdatedUser) {
-        throw new GraphQLError("User not found", {
-          extensions: { code: "NOT_FOUND" },
-        });
-      }
+      const user = requireAuth(context);
+      const parsed = validateInput(updateSchema, args.input);
+      const { name, role } = parsed;
+      const toBeUpdatedUser = await ensureUserExistAndReturnUserIfExists(
+        user._id
+      );
       if (name) toBeUpdatedUser.name = name;
       if (role) toBeUpdatedUser.role = role;
       return await toBeUpdatedUser.save();
     },
     deleteUser: async (
       parent: unknown,
-      args: DeleteArgs,
-      context: unknown,
-      info: unknown
+      args: { input: TypeDeleteInput },
+      context: TypeMyContext,
+      info: GraphQLResolveInfo
     ) => {
-      const parsed = deleteSchema.safeParse(args.input);
-      if (!parsed.success) {
-        const message = parsed.error.errors.map((e) => e.message).join(", ");
-        throw new GraphQLError("Validation Error: " + message);
-      }
-      const { id } = args.input;
-      console.log("input in deleteUser", args.input);
-      const deletedUser = await UserModel.findByIdAndDelete(id);
+      const user = requireAuth(context);
+      const deletedUser = await UserModel.findByIdAndDelete(user._id);
       if (!deletedUser) {
         throw new GraphQLError("User not found", {
           extensions: { code: "NOT_FOUND" },

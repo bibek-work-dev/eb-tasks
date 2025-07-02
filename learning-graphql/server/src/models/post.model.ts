@@ -1,15 +1,9 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, InferSchemaType, HydratedDocument } from "mongoose";
 
-export interface IPost extends Document {
-  title: string;
-  content: string;
-  author: Types.ObjectId;
-}
-
-const postSchema = new Schema<IPost>(
+const postSchema = new Schema(
   {
     title: { type: String, required: true },
-    content: { type: String, required: true },
+    description: { type: String, required: true },
     author: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -19,4 +13,6 @@ const postSchema = new Schema<IPost>(
   { timestamps: true }
 );
 
-export const PostModel = model<IPost>("Post", postSchema);
+export type postType = InferSchemaType<typeof postSchema>;
+export type postDocument = HydratedDocument<postType>;
+export const PostModel = model<postType>("Post", postSchema);

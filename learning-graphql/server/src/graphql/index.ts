@@ -1,10 +1,3 @@
-// import { mergeResolvers, mergeTypeDefs } from "@graphql-tools/merge";
-// import { userTypeDefs } from "./schema/user.typeDefs.js";
-// import { userResolvers } from "./resolvers/user.resolvers.js";
-
-// export const typeDefs = mergeTypeDefs([userTypeDefs]);
-// export const resolvers = mergeResolvers([userResolvers]);
-
 import { mergeResolvers, mergeTypeDefs } from "@graphql-tools/merge";
 import { userTypeDefs } from "./schema/user.typeDefs.js";
 import { userResolvers } from "./resolvers/user.resolvers.js";

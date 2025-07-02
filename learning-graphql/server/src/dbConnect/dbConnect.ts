@@ -1,8 +1,10 @@
+import "../config/env.js";
 import mongoose from "mongoose";
 
 const MONGO_URI = process.env.MONGO_URI;
-async function connectToDB() {
+async function connectToDB(): Promise<void> {
   try {
+    // console.log("mongoURI", MONGO_URI);
     if (!MONGO_URI) {
       throw new Error("Something went wrong");
     }

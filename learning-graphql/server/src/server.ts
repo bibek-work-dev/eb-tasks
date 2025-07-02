@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express, { Request, Response } from "express";
 import { ApolloServer } from "@apollo/server";
 import cors from "cors";
@@ -6,13 +8,27 @@ import connectToDB from "./dbConnect/dbConnect.js";
 import { resolvers, typeDefs } from "./graphql/index.js";
 import http from "http";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { verifyJwt } from "./utils/jwt.js";
+import { GraphQLError } from "graphql";
 
-const PORT = process.env.PORT;
+export type TypeAuthUser = {
+  _id: string;
+  email: string;
+  role: "USER" | "ADMIN";
+};
+
+export type TypeMyContext = {
+  user: TypeAuthUser | null;
+  req: Request;
+};
+
+const PORT = process.env.PORT || 3000;
+// console.log("process.env", process.env.MONGO_URI);
 
 async function startServer() {
   const app = express();
   const httpServer = http.createServer(app);
-  const server = new ApolloServer({
+  const server = new ApolloServer<TypeMyContext>({
     typeDefs: typeDefs,
     resolvers: resolvers,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
@@ -26,10 +42,17 @@ async function startServer() {
     "/graphql",
     cors(),
     express.json(),
-    expressMiddleware(server, {
-      context: async ({ req }) => {
+    expressMiddleware<TypeMyContext>(server, {
+      context: async ({ req }): Promise<TypeMyContext> => {
         console.log("here");
+        const authHeader = req.headers.authorization || "";
+        const token = authHeader.startsWith("Bearer ")
+          ? authHeader.split(" ")[1]
+          : null;
+
+        const user = token ? verifyJwt(token) : null;
         return {
+          user,
           req,
         };
       },
@@ -42,34 +65,3 @@ async function startServer() {
 }
 
 startServer();
-
-// import { ApolloServer } from "@apollo/server";
-// import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
-// import { expressMiddleware } from "@as-integrations/express4";
-// import express from "express";
-// import http from "http";
-// import cors from "cors";
-// import { typeDefs } from "./graphql";
-// import { resolvers } from "./graphql";
-
-// const app = express();
-// const httpServer = http.createServer(app);
-// const server = new ApolloServer({
-//   typeDefs,
-//   resolvers,
-//   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-// });
-// await server.start();
-// app.use(
-//   "/graphql",
-//   cors<cors.CorsRequest>(),
-//   express.json(),
-//   expressMiddleware(server, {
-//     // context: async ({ req }) => ({ token: req.headers.token }),
-//   })
-// );
-
-// await new Promise<void>((resolve) =>
-//   httpServer.listen({ port: 4000 }, resolve)
-// );
-// console.log(`🚀 Server ready at http://localhost:4000/graphql`);
