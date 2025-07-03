@@ -1,7 +1,7 @@
 import { GraphQLError } from "graphql";
-import { UserModel } from "../models/user.model";
+import { UserModel } from "../models/user.model.js";
 import { ZodSchema } from "zod";
-import { postDocument, PostModel } from "../models/post.model";
+import { postDocument, PostModel } from "../models/post.model.js";
 import { Types } from "mongoose";
 
 const ensureUserExistAndReturnUserIfExists = async (userId: string) => {
@@ -39,12 +39,14 @@ const ensurePostOwnerShip = (userId: string, post: postDocument) => {
 
 const validateInput = <T>(schema: ZodSchema<T>, input: unknown): T => {
   const parsed = schema.safeParse(input);
+  // console.log("input", input);
   if (!parsed.success) {
     const message = parsed.error.errors.map((e) => e.message).join(",");
     throw new GraphQLError("Validation Error: " + message, {
       extensions: { code: "BAD_USER_INPUT" },
     });
   }
+  // console.log("parsed", parsed);
   return parsed.data;
 };
 

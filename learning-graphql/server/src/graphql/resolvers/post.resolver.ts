@@ -40,9 +40,9 @@ export const postResolvers = {
         description: parsed.description,
         author: user._id,
       });
-
       return newPost;
     },
+
     updatePost: async (
       parent: unknown,
       args: { input: TypeUpdatePostSchema },

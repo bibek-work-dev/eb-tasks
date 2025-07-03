@@ -22,8 +22,13 @@ export const userTypeDefs = gql`
     user: User!
   }
 
+  type Me {
+    user: User!
+  }
+
   input UpdateUserInput {
     id: ID!
+    name: String
     password: String
     role: String
   }
@@ -40,7 +45,6 @@ export const userTypeDefs = gql`
   }
 
   type Query {
-    hello: String
     users: [User!]!
     user(id: ID!): User
     me: User

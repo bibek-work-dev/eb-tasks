@@ -9,7 +9,6 @@ import { resolvers, typeDefs } from "./graphql/index.js";
 import http from "http";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { verifyJwt } from "./utils/jwt.js";
-import { GraphQLError } from "graphql";
 
 export type TypeAuthUser = {
   _id: string;
@@ -44,11 +43,13 @@ async function startServer() {
     express.json(),
     expressMiddleware<TypeMyContext>(server, {
       context: async ({ req }): Promise<TypeMyContext> => {
-        console.log("here");
         const authHeader = req.headers.authorization || "";
+        // console.log("authorization", authHeader);
         const token = authHeader.startsWith("Bearer ")
           ? authHeader.split(" ")[1]
           : null;
+
+        console.log("token", token);
 
         const user = token ? verifyJwt(token) : null;
         return {
@@ -65,3 +66,6 @@ async function startServer() {
 }
 
 startServer();
+
+// random one eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODY1ZjhhYWVkNTk2NjI2ZDI1MzAzNzAiLCJyb2xlIjoiVVNFUiIsImVtYWlsIjoicmFuZG9tb25lQGdtYWlsLmNvbSIsImlhdCI6MTc1MTUyMDg2MCwiZXhwIjoxNzUxNjA3MjYwfQ.pZke2_1Oo-bDdr82qJsf-kP2oXFOR2ZNHRpd_gFlKmM
+// random two eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODY1ZmMyNDhlYzQ4ODg3YzIxODM5NjMiLCJyb2xlIjoiVVNFUiIsImVtYWlsIjoicmFuZG9tdHdvQGdtYWlsLmNvbSIsImlhdCI6MTc1MTUyMDM3NSwiZXhwIjoxNzUxNjA2Nzc1fQ.hfbU4bUNYKfOQfZhVS-Ih1_aKodpdPpHZvWxTArr9DI

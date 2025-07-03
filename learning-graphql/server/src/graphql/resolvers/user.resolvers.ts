@@ -23,7 +23,6 @@ import {
 export const userResolvers = {
   Query: {
     users: async (parent: any, args: any, context: any, info: any) => {
-      //   console.log("in users", parent, args, context, info);
       return await UserModel.find();
     },
     user: async (
@@ -32,12 +31,14 @@ export const userResolvers = {
       context: any,
       info: any
     ) => {
-      //   console.log("parent:", parent);
-      console.log("args:", args);
-      console.log("context:", context);
       requireAuth(context);
-      //   console.log("info:", info);
       return await UserModel.findById(args.id);
+    },
+    me: async (parent: any, args: any, context: TypeMyContext, info: any) => {
+      console.log("here");
+      const user = requireAuth(context);
+      const mySelf = await ensureUserExistAndReturnUserIfExists(user._id);
+      return mySelf;
     },
   },
   Mutation: {

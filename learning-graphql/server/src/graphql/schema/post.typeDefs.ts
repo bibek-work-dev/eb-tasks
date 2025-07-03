@@ -4,13 +4,12 @@ export const postTypeDefs = gql`
   input CreatePostInput {
     title: String!
     description: String!
-    authorId: ID!
   }
 
   input UpdatePostInput {
     id: ID!
     title: String
-    content: String
+    description: String
   }
 
   input DeletePostInput {
