@@ -1,7 +1,8 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 const productSchema = new Schema(
   {
+    ownedBy: { type: Types.ObjectId, ref: "User", required: true },
     name: { type: String, required: true, trim: true },
     images: [{ type: String }],
     costPrice: { type: Number, required: true },
