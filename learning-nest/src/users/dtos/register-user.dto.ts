@@ -10,11 +10,10 @@ enum UserRole {
   USER,
   ADMIN,
 }
-
-export class createUserDto {
+export class registerUserDto {
   @IsString()
-  @MinLength(3)
-  @MaxLength(20)
+  @MinLength(2)
+  @MaxLength(100)
   username: string;
 
   @IsEmail()
@@ -22,7 +21,7 @@ export class createUserDto {
 
   @IsString()
   @MinLength(6)
-  @MaxLength(20)
+  @MaxLength(100)
   password: string;
 
   @IsEnum(UserRole)

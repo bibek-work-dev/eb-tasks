@@ -9,8 +9,9 @@ import {
 } from '@nestjs/common';
 import { UserService } from './users.service';
 import { UserDocument } from './users.schema';
-import { createUserDto } from './dtos/create-user.dto';
-import { create } from 'domain';
+import { registerUserDto } from './dtos/register-user.dto';
+import { loginUserDto } from './dtos/login-user.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
 
 @Controller('users')
 export class UserController {
@@ -18,6 +19,7 @@ export class UserController {
 
   @Get(':id')
   getUser(@Param('id') id: string): Promise<UserDocument> {
+    console.log('get user by id', id);
     return this.userService.getUser(id);
   }
 
@@ -27,23 +29,30 @@ export class UserController {
   }
 
   @Post('register')
-  register(@Body() createUserDto: createUserDto): Promise<UserDocument> {
-    return this.userService.registerUser(createUserDto);
+  register(@Body() registerUserDto: registerUserDto): Promise<UserDocument> {
+    console.log('registeruser', registerUserDto);
+    return this.userService.registerUser(registerUserDto);
   }
 
   @Post('login')
-  login(): string {
-    return this.userService.loginUser();
+  login(@Body() loginUserDto: loginUserDto): Promise<{
+    user: any;
+    // user: Omit<UserDocument, 'password'>;
+    token: string;
+  }> {
+    return this.userService.loginUser(loginUserDto);
   }
 
   @Patch(':id')
-  updateUser(): string {
-    return this.userService.updateUser();
+  updateUser(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<UserDocument> {
+    return this.userService.updateUser(id, updateUserDto);
   }
 
   @Delete(':id')
-  deleteUser(): string {
-    console.log('delete');
-    return this.userService.deleteUser();
+  deleteUser(@Param('id') id: string): Promise<UserDocument> {
+    return this.userService.deleteUser(id);
   }
 }

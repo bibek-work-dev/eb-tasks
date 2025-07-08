@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Body, Injectable, NotFoundException } from '@nestjs/common';
 import { LoggerService } from 'src/logs/logs.service';
 import { CatsDocument } from './cats.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { CreateCatDto } from './dtos/create-cat.dto';
+import { UpdateCatDto } from './dtos/update-cat.dto';
 
 @Injectable()
 export class CatsService {
@@ -22,19 +24,40 @@ export class CatsService {
     return cat;
   }
 
-  findAllCat(): string {
-    return 'This is to return all cat';
+  async findAllCats(): Promise<CatsDocument[]> {
+    const cats = await this.catsModel.find().exec();
+    return cats;
   }
 
-  createCat(): string {
-    return 'This create a cat';
+  async createCat(createCatDto: CreateCatDto): Promise<CatsDocument> {
+    const createdCat = new this.catsModel(createCatDto);
+    return createdCat.save();
   }
 
-  updateCat(): string {
-    return 'This updates a cat';
+  async updateCat(
+    id: string,
+    updateCatDto: UpdateCatDto,
+  ): Promise<CatsDocument> {
+    const updatedCat = await this.catsModel.findByIdAndUpdate(
+      id,
+      updateCatDto,
+      {
+        new: true,
+      },
+    );
+    if (!updatedCat) {
+      throw new NotFoundException(`Cat with id ${id} not found`);
+    }
+    this.loggerService.log('this is updateCat');
+    return updatedCat;
   }
 
-  deleteCat(): string {
-    return 'This is to delete the cat';
+  async deleteCat(id: string): Promise<CatsDocument> {
+    const deletedCat = await this.catsModel.findByIdAndDelete(id);
+    if (!deletedCat) {
+      throw new NotFoundException(`Cat with id ${id} not found`);
+    }
+    this.loggerService.log('this is deleteCat');
+    return deletedCat;
   }
 }

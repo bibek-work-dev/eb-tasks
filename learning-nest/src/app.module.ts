@@ -3,20 +3,27 @@ import { Module } from '@nestjs/common';
 import { CatsModule } from './cats/cats.module';
 import { UserModule } from './users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { OrdersModule } from './orders/orders.module';
-import { ProductsModule } from './products/products.module';
-import { PurchasedModule } from './purchased/purchased.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      'mongodb+srv://root:root@cluster0.1ay18rg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
-    ),
+    ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const uri = config.get<string>('MONGO_URI');
+        if (!uri) {
+          throw new Error(
+            'MONGO_URI is not defined in the environment variables',
+          );
+        }
+        return {
+          uri,
+        };
+      },
+    }),
     CatsModule,
     UserModule,
-    OrdersModule,
-    ProductsModule,
-    PurchasedModule,
   ],
   controllers: [],
   providers: [],

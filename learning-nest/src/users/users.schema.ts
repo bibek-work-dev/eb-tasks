@@ -2,18 +2,19 @@ import { Schema, Document } from 'mongoose';
 
 export interface UserDocument extends Document {
   email: string;
-  name: string;
+  username: string;
   password: string;
   createdAt: Date;
   updatedAt: Date;
+  role: 'USER' | 'ADMIN';
 }
 
 export const userSchema = new Schema<UserDocument>(
   {
-    name: {
+    username: {
       type: String,
       required: true,
-      unique: true,
+      // unique: true
       lowercase: true,
       trim: true,
     },
@@ -27,6 +28,11 @@ export const userSchema = new Schema<UserDocument>(
     password: {
       type: String,
       required: true,
+    },
+    role: {
+      type: String,
+      enum: ['USER', 'ADMIN'],
+      default: 'USER',
     },
   },
   { timestamps: true },
