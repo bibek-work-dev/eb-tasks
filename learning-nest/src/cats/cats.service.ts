@@ -29,34 +29,41 @@ export class CatsService {
     return cats;
   }
 
-  async createCat(createCatDto: CreateCatDto): Promise<CatsDocument> {
-    const createdCat = new this.catsModel(createCatDto);
+  async createCat(
+    userId: string,
+    createCatDto: CreateCatDto,
+  ): Promise<CatsDocument> {
+    const createdCat = new this.catsModel({ ...createCatDto, addedBy: userId });
     return createdCat.save();
   }
 
   async updateCat(
     id: string,
+    userId: string,
     updateCatDto: UpdateCatDto,
   ): Promise<CatsDocument> {
-    const updatedCat = await this.catsModel.findByIdAndUpdate(
-      id,
-      updateCatDto,
-      {
-        new: true,
-      },
-    );
+    const updatedCat = await this.catsModel.findById(id);
     if (!updatedCat) {
       throw new NotFoundException(`Cat with id ${id} not found`);
     }
+    if (updatedCat?.addedBy.toString() !== userId) {
+      throw new NotFoundException("You aren't authorized to update this cat");
+    }
+    updatedCat.set(updateCatDto);
+    await updatedCat.save();
     this.loggerService.log('this is updateCat');
     return updatedCat;
   }
 
-  async deleteCat(id: string): Promise<CatsDocument> {
-    const deletedCat = await this.catsModel.findByIdAndDelete(id);
+  async deleteCat(userId: string, id: string): Promise<CatsDocument> {
+    const deletedCat = await this.catsModel.findById(id);
     if (!deletedCat) {
       throw new NotFoundException(`Cat with id ${id} not found`);
     }
+    if (deletedCat?.addedBy.toString() !== userId) {
+      throw new NotFoundException("You aren't authorized to delete this cat");
+    }
+    await this.catsModel.findByIdAndDelete(id);
     this.loggerService.log('this is deleteCat');
     return deletedCat;
   }
