@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CatsService } from './cats.service';
 import { LoggerService } from 'src/logs/logs.service';
@@ -15,8 +16,10 @@ import { CreateCatDto } from './dtos/create-cat.dto';
 import { UpdateCatDto } from './dtos/update-cat.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard';
 import { User } from 'src/common/decorators/user/user.decorator';
+import { LoggerInterceptor } from 'src/common/interceptors/logger/logger.interceptor';
 
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(LoggerInterceptor)
 @Controller('cats')
 export class CatsController {
   constructor(
@@ -55,8 +58,8 @@ export class CatsController {
   @Delete(':id')
   deleteCat(
     @User('id') userId: string,
-    @Param('id') id: string,
+    @Param('id') catId: string,
   ): Promise<CatsDocument> {
-    return this.catsService.deleteCat(userId, id);
+    return this.catsService.deleteCat(userId, catId);
   }
 }
