@@ -4,7 +4,7 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 @Injectable()
 export class LoggerInterceptor implements NestInterceptor {
@@ -14,8 +14,19 @@ export class LoggerInterceptor implements NestInterceptor {
     const url = request.url;
     const now = Date.now();
 
-    console.log(`${method} ${url} - incoming request`);
+    console.log(`${method} ${url} - incoming request in interceptors`);
 
-    return next.handle();
+    return next.handle().pipe(
+      map((responseFromController) => {
+        const { data, message } = responseFromController;
+        const duration = Date.now() - now;
+        console.log(`${method} ${url} - response time: ${duration}ms`);
+        return {
+          success: true,
+          message: message,
+          data: data,
+        };
+      }),
+    );
   }
 }

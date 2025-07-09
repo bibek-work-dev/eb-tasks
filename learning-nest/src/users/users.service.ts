@@ -20,9 +20,9 @@ export class UserService {
     private loggerService: LoggerService,
   ) {}
 
-  async getUser(id: string): Promise<UserDocument> {
-    this.loggerService.log(`Fetching user with id: ${id}`);
-    const user = await this.userModel.findById(id);
+  async getUser(userId: string): Promise<UserDocument> {
+    this.loggerService.log(`Fetching user with id: ${userId}`);
+    const user = await this.userModel.findById(userId);
     if (!user) {
       throw new NotFoundException('The user with such id is not found');
     }

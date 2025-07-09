@@ -1,9 +1,9 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 
 @Injectable()
-export class LoggerMiddleware implements NestMiddleware {
+export class GlobalMiddleware implements NestMiddleware {
   use(req: any, res: any, next: () => void) {
-    console.log('Incoming Request in middleware');
+    console.log('global middleware');
     next();
   }
 }

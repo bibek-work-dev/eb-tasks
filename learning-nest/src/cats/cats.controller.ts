@@ -16,10 +16,9 @@ import { CreateCatDto } from './dtos/create-cat.dto';
 import { UpdateCatDto } from './dtos/update-cat.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard';
 import { User } from 'src/common/decorators/user/user.decorator';
-import { LoggerInterceptor } from 'src/common/interceptors/logger/logger.interceptor';
+import { ApiResponse } from 'src/common/types/api.response.interface';
 
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(LoggerInterceptor)
 @Controller('cats')
 export class CatsController {
   constructor(
@@ -28,38 +27,61 @@ export class CatsController {
   ) {}
 
   @Get(':id')
-  findCat(@Param('id') id: string): Promise<CatsDocument> {
-    this.loggerService.log('this is invoked in cats Service in loggerService');
-    return this.catsService.findCat(id);
+  async findCat(@Param('id') id: string): Promise<ApiResponse<CatsDocument>> {
+    const cat = await this.catsService.findCat(id);
+    return {
+      message: 'Cat fetched successfully',
+      data: cat,
+    };
   }
 
   @Get()
-  findAllCats(): Promise<CatsDocument[]> {
-    return this.catsService.findAllCats();
+  async findAllCats(): Promise<ApiResponse<CatsDocument[]>> {
+    const cats = await this.catsService.findAllCats();
+    return {
+      message: 'All cats fetched successfully',
+      data: cats,
+    };
   }
 
   @Post('create')
-  createCat(
+  async createCat(
     @User('id') userId: string,
     @Body() createCatDto: CreateCatDto,
-  ): Promise<CatsDocument> {
-    return this.catsService.createCat(userId, createCatDto);
+  ): Promise<ApiResponse<CatsDocument>> {
+    const createdCat = await this.catsService.createCat(userId, createCatDto);
+    return {
+      message: 'Cat created successfully',
+      data: createdCat,
+    };
   }
 
   @Patch(':id')
-  updateCat(
+  async updateCat(
     @User('id') userId: string,
     @Param('id') catId: string,
     @Body() updateCatDto: UpdateCatDto,
-  ): Promise<CatsDocument> {
-    return this.catsService.updateCat(catId, userId, updateCatDto);
+  ): Promise<ApiResponse<CatsDocument>> {
+    const updatedCat = await this.catsService.updateCat(
+      catId,
+      userId,
+      updateCatDto,
+    );
+    return {
+      message: 'Cat updated successfully',
+      data: updatedCat,
+    };
   }
 
   @Delete(':id')
-  deleteCat(
+  async deleteCat(
     @User('id') userId: string,
     @Param('id') catId: string,
-  ): Promise<CatsDocument> {
-    return this.catsService.deleteCat(userId, catId);
+  ): Promise<ApiResponse<CatsDocument>> {
+    const deletedCat = await this.catsService.deleteCat(userId, catId);
+    return {
+      data: deletedCat,
+      message: 'Cat deleted successfully',
+    };
   }
 }

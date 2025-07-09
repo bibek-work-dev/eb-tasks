@@ -6,53 +6,94 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './users.service';
 import { UserDocument } from './users.schema';
 import { registerUserDto } from './dtos/register-user.dto';
 import { loginUserDto } from './dtos/login-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { User } from 'src/common/decorators/user/user.decorator';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard';
+import { ApiResponse } from 'src/common/types/api.response.interface';
 
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @Get('/me')
+  async getMe(@User('id') userId: string): Promise<ApiResponse<UserDocument>> {
+    const user = await this.userService.getUser(userId);
+    return {
+      data: user,
+      message: 'User fetched successfully',
+    };
+  }
+
   @Get(':id')
-  getUser(@Param('id') id: string): Promise<UserDocument> {
-    console.log('get user by id', id);
-    return this.userService.getUser(id);
+  async getUser(@Param('id') id: string): Promise<ApiResponse<UserDocument>> {
+    const user = await this.userService.getUser(id);
+    return {
+      data: user,
+      message: 'User fetched successfully',
+    };
   }
 
   @Get()
-  getAllUsers(): Promise<UserDocument[]> {
-    return this.userService.getAllUser();
+  async getAllUsers(): Promise<ApiResponse<UserDocument[]>> {
+    const users = await this.userService.getAllUser();
+    return {
+      data: users,
+      message: 'All users fetched successfully',
+    };
   }
 
   @Post('register')
-  register(@Body() registerUserDto: registerUserDto): Promise<UserDocument> {
-    console.log('registeruser', registerUserDto);
-    return this.userService.registerUser(registerUserDto);
+  async register(
+    @Body() registerUserDto: registerUserDto,
+  ): Promise<ApiResponse<UserDocument>> {
+    const userCreated = await this.userService.registerUser(registerUserDto);
+    return {
+      data: userCreated,
+      message: 'User registered successfully',
+    };
   }
 
   @Post('login')
-  login(@Body() loginUserDto: loginUserDto): Promise<{
-    user: any;
-    // user: Omit<UserDocument, 'password'>;
-    token: string;
-  }> {
-    return this.userService.loginUser(loginUserDto);
+  async login(
+    @Body() loginUserDto: loginUserDto,
+  ): Promise<ApiResponse<{ user: any; token: string }>> {
+    const loginUser = await this.userService.loginUser(loginUserDto);
+    return {
+      message: 'User logged in successfully',
+      data: {
+        user: loginUser.user,
+        token: loginUser.token,
+      },
+    };
   }
 
   @Patch(':id')
-  updateUser(
+  async updateUser(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<UserDocument> {
-    return this.userService.updateUser(id, updateUserDto);
+  ): Promise<ApiResponse<UserDocument>> {
+    const user = await this.userService.updateUser(id, updateUserDto);
+    return {
+      data: user,
+      message: 'User updated successfully',
+    };
   }
 
   @Delete(':id')
-  deleteUser(@Param('id') id: string): Promise<UserDocument> {
-    return this.userService.deleteUser(id);
+  async deleteUser(
+    @Param('id') id: string,
+  ): Promise<ApiResponse<UserDocument>> {
+    const user = await this.userService.deleteUser(id);
+    return {
+      data: user,
+      message: 'User deleted successfully',
+    };
   }
 }
