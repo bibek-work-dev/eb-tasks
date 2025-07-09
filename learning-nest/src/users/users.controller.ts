@@ -16,6 +16,7 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 import { User } from 'src/common/decorators/user/user.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard';
 import { ApiResponse } from 'src/common/types/api.response.interface';
+import { ValidateMongooseIdPipe } from 'src/common/pipes/validate-mongoose-id/validate-mongoose-id.pipe';
 
 @Controller('users')
 export class UserController {
@@ -32,7 +33,9 @@ export class UserController {
   }
 
   @Get(':id')
-  async getUser(@Param('id') id: string): Promise<ApiResponse<UserDocument>> {
+  async getUser(
+    @Param('id', ValidateMongooseIdPipe) id: string,
+  ): Promise<ApiResponse<UserDocument>> {
     const user = await this.userService.getUser(id);
     return {
       data: user,
@@ -76,7 +79,7 @@ export class UserController {
 
   @Patch(':id')
   async updateUser(
-    @Param('id') id: string,
+    @Param('id', ValidateMongooseIdPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<ApiResponse<UserDocument>> {
     const user = await this.userService.updateUser(id, updateUserDto);
@@ -88,7 +91,7 @@ export class UserController {
 
   @Delete(':id')
   async deleteUser(
-    @Param('id') id: string,
+    @Param('id', ValidateMongooseIdPipe) id: string,
   ): Promise<ApiResponse<UserDocument>> {
     const user = await this.userService.deleteUser(id);
     return {
