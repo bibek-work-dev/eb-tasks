@@ -6,21 +6,16 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { AuthDocument } from './auth.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
-
-type ApiResponse<T> = {
-  message: string;
-  data: T | null;
-};
-
-function createApiResponse<T>(message: string, data: T | null): ApiResponse<T> {
-  return { message, data };
-}
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ApiResponse } from 'src/common/types/response';
+import { createApiResponse } from 'src/common/utils/response';
 
 @Controller('auth')
 export class AuthController {
@@ -67,6 +62,14 @@ export class AuthController {
       accessToken: loggedInUser.accessToken,
       refreshToken: loggedInUser.refreshToken,
     });
+  }
+
+  @Post('refresh')
+  async refreshTokenController(
+    @Body() refreshTokenDto: RefreshTokenDto,
+  ): Promise<ApiResponse<{ accessToken: string; refreshToken: string }>> {
+    const tokens = await this.authService.refreshTokenService(refreshTokenDto);
+    return createApiResponse('Token refreshed sucessfully', tokens);
   }
 
   @Patch(':id')

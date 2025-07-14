@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import * as bcrypt from 'bcrypt';
@@ -6,6 +10,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Auth, AuthDocument, AuthSchema } from './auth.schema';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
+import { AppJwtPayload } from 'src/common/types/jwtpayload';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -55,6 +61,25 @@ export class AuthService {
     return users;
   }
 
+  async refreshTokenService(
+    refreshTokenDto: RefreshTokenDto,
+  ): Promise<{ accessToken: string; refreshToken: any }> {
+    const { refreshToken } = refreshTokenDto;
+    let decoded: any;
+    try {
+      decoded = await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.REFRESH_TOKEN_JWT_SECRET,
+      });
+    } catch (error) {
+      throw new UnauthorizedException('invalid or expired refresh');
+    }
+    const userFromRefreshToken = await this.AuthModel.findById(decoded.id);
+    if (!userFromRefreshToken)
+      throw new UnauthorizedException('User not found');
+    const token = this.generateTokens(userFromRefreshToken);
+    return token;
+  }
+
   async findOneService(id: string): Promise<AuthDocument> {
     const user = await this.AuthModel.findById(id);
     if (!user) {
@@ -86,8 +111,13 @@ export class AuthService {
     return deletedUser;
   }
 
+  private getTokenPayload(user: AuthDocument): AppJwtPayload {
+    const payload = { id: user.id, email: user.email, role: user.role };
+    return payload;
+  }
+
   private async generateAccessToken(user: AuthDocument): Promise<string> {
-    const payload = { id: user._id, email: user.email };
+    const payload = this.getTokenPayload(user);
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: process.env.ACCESS_TOKEN_JWT_SECRET,
       expiresIn: process.env.ACCESS_TOKEN_JWT_EXPIRESIN,
@@ -96,7 +126,7 @@ export class AuthService {
   }
 
   private async generateRefreshToken(user: AuthDocument): Promise<string> {
-    const payload = { id: user._id, email: user.email };
+    const payload = this.getTokenPayload(user);
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret: process.env.REFRESH_TOKEN_JWT_SECRET,
       expiresIn: process.env.REFRESH_TOKEN_JWT_EXPIRESIN,

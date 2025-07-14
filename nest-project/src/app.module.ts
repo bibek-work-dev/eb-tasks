@@ -6,7 +6,6 @@ import { CommentsModule } from './comments/comments.module';
 import { PostsModule } from './posts/posts.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -23,7 +22,6 @@ import { ProductsModule } from './products/products.module';
     AuthModule,
     PostsModule,
     CommentsModule,
-    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
