@@ -16,6 +16,8 @@ import { User } from 'src/common/decorators/user/user.decorator';
 import { createApiResponse } from 'src/common/utils/response';
 import { ApiResponse } from 'src/common/types/response';
 import { PostDocument } from './posts.schema';
+import { ValidateMongooseObjectIdPipe } from 'src/common/pipes/validate.mongoose.object-id/validate.mongoose.object-id.pipe';
+import { CommentDocument } from 'src/comments/comments.schema';
 
 type PostResponse<T> = Promise<ApiResponse<T>>;
 
@@ -28,9 +30,12 @@ export class PostsController {
   async createPostController(
     @Body() createPostDto: CreatePostDto,
     @User('id') userId: string,
+    @User('name') authorName: string,
   ): PostResponse<PostDocument> {
+    console.log('In create', userId, authorName);
     const post = await this.postsService.createPostService(
       userId,
+      authorName,
       createPostDto,
     );
     return createApiResponse('Post Created successfully', post);
@@ -40,6 +45,15 @@ export class PostsController {
   async findAllPostController(): PostResponse<PostDocument[]> {
     const posts = await this.postsService.findAllPostService();
     return createApiResponse('All Post fetched successfully', posts);
+  }
+
+  @Get(':id/comments')
+  async findPostCommentsController(
+    @Param('id', ValidateMongooseObjectIdPipe) postId: string,
+  ): PostResponse<CommentDocument[]> {
+    const postComments =
+      await this.postsService.findPostCommentsService(postId);
+    return createApiResponse('Comments Fetched successfully', postComments);
   }
 
   @Get(':id')

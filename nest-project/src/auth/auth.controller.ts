@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -16,6 +17,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ApiResponse } from 'src/common/types/response';
 import { createApiResponse } from 'src/common/utils/response';
+import { User } from 'src/common/decorators/user/user.decorator';
+import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -27,6 +30,15 @@ export class AuthController {
       'All users retrieved successfully',
       users,
     );
+  }
+
+  @Get('me')
+  @UseGuards(AuthGuard)
+  async getMeController(
+    @User('id') userId: string,
+  ): Promise<ApiResponse<AuthDocument>> {
+    const getMe = await this.authService.getMeUserService(userId);
+    return createApiResponse('You are it', getMe);
   }
 
   @Get(':id')
@@ -73,6 +85,7 @@ export class AuthController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard)
   async updateUserController(
     @Param('id') id: string,
     @Body() updateAuthDto: UpdateUserDto,
@@ -88,6 +101,7 @@ export class AuthController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard)
   async deleteUserController(
     @Param('id') id: string,
   ): Promise<ApiResponse<AuthDocument>> {

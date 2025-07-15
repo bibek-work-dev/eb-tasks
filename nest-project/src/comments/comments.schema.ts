@@ -11,6 +11,9 @@ export class Comment {
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   authorId: Types.ObjectId;
+
+  @Prop({ type: String, required: true })
+  authorName: string;
 }
 
 export type CommentDocument = Comment & Document;

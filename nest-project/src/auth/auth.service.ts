@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -33,6 +34,7 @@ export class AuthService {
     const newUser = new this.AuthModel({
       ...registerUserDto,
       password: hashedPassword,
+      refreshToken: null,
     });
     await newUser.save();
     return newUser;
@@ -53,6 +55,10 @@ export class AuthService {
       throw new ConflictException('Invalid email or password');
     }
     const { accessToken, refreshToken } = await this.generateTokens(user);
+
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    user.refreshToken = hashedRefreshToken;
+    await user.save();
     return { user, accessToken, refreshToken };
   }
 
@@ -61,11 +67,25 @@ export class AuthService {
     return users;
   }
 
+  async findOneService(id: string): Promise<AuthDocument> {
+    const user = await this.AuthModel.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  async getMeUserService(userId: string): Promise<AuthDocument> {
+    const user = await this.AuthModel.findById(userId);
+    if (!user) throw new NotFoundException('You seeems to be not available');
+    return user;
+  }
+
   async refreshTokenService(
     refreshTokenDto: RefreshTokenDto,
   ): Promise<{ accessToken: string; refreshToken: any }> {
     const { refreshToken } = refreshTokenDto;
-    let decoded: any;
+    let decoded: AppJwtPayload;
     try {
       decoded = await this.jwtService.verifyAsync(refreshToken, {
         secret: process.env.REFRESH_TOKEN_JWT_SECRET,
@@ -74,18 +94,25 @@ export class AuthService {
       throw new UnauthorizedException('invalid or expired refresh');
     }
     const userFromRefreshToken = await this.AuthModel.findById(decoded.id);
-    if (!userFromRefreshToken)
+    if (!userFromRefreshToken || !userFromRefreshToken.refreshToken)
       throw new UnauthorizedException('User not found');
-    const token = this.generateTokens(userFromRefreshToken);
-    return token;
-  }
 
-  async findOneService(id: string): Promise<AuthDocument> {
-    const user = await this.AuthModel.findById(id);
-    if (!user) {
-      throw new ConflictException('User not found');
+    const isMatch = await bcrypt.compare(
+      refreshToken,
+      userFromRefreshToken.refreshToken,
+    );
+
+    if (!isMatch) {
+      throw new UnauthorizedException('Invalid Refresh Token');
     }
-    return user;
+
+    const { accessToken, refreshToken: newRefreshToken } =
+      await this.generateTokens(userFromRefreshToken);
+
+    const hashedNewRefreshToken = await bcrypt.hash(newRefreshToken, 10);
+    userFromRefreshToken.refreshToken = hashedNewRefreshToken;
+    await userFromRefreshToken.save();
+    return { accessToken, refreshToken: newRefreshToken };
   }
 
   async updateUserService(
@@ -112,7 +139,12 @@ export class AuthService {
   }
 
   private getTokenPayload(user: AuthDocument): AppJwtPayload {
-    const payload = { id: user.id, email: user.email, role: user.role };
+    const payload = {
+      id: user.id,
+      name: user.username,
+      email: user.email,
+      role: user.role,
+    };
     return payload;
   }
 

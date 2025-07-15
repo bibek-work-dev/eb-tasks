@@ -15,6 +15,12 @@ export class Auth {
 
   @Prop({ type: String, enum: UserRole, default: UserRole.USER })
   role: UserRole;
+
+  @Prop({ type: String })
+  refreshToken: string;
+
+  @Prop({ type: Date })
+  refreshTokenExpiresAt: Date;
 }
 
 export type AuthDocument = Auth & Document;
