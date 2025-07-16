@@ -8,6 +8,9 @@ import {
   Delete,
   Req,
   UseGuards,
+  Query,
+  ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -19,17 +22,19 @@ import { ApiResponse } from 'src/common/types/response';
 import { createApiResponse } from 'src/common/utils/response';
 import { User } from 'src/common/decorators/user/user.decorator';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
+import { ValidateMongooseObjectIdPipe } from 'src/common/pipes/validate.mongoose.object-id/validate.mongoose.object-id.pipe';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Get()
-  async findAllController(): Promise<ApiResponse<AuthDocument[]>> {
-    const users = await this.authService.findAllService();
-    return createApiResponse<AuthDocument[]>(
-      'All users retrieved successfully',
-      users,
-    );
+  async findAllController(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ): Promise<ApiResponse<{ users: AuthDocument[]; total: number }>> {
+    console.log('first and last', page, limit);
+    const users = await this.authService.findAllService(page, limit);
+    return createApiResponse('All users retrieved successfully', users);
   }
 
   @Get('me')
@@ -87,7 +92,7 @@ export class AuthController {
   @Patch(':id')
   @UseGuards(AuthGuard)
   async updateUserController(
-    @Param('id') id: string,
+    @Param('id', ValidateMongooseObjectIdPipe) id: string,
     @Body() updateAuthDto: UpdateUserDto,
   ): Promise<ApiResponse<AuthDocument>> {
     const updatedUser = await this.authService.updateUserService(

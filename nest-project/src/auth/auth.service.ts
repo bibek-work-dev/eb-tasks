@@ -62,9 +62,16 @@ export class AuthService {
     return { user, accessToken, refreshToken };
   }
 
-  async findAllService(): Promise<AuthDocument[]> {
-    const users = await this.AuthModel.find({}).exec();
-    return users;
+  async findAllService(
+    page: number,
+    limit: number,
+  ): Promise<{ users: AuthDocument[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const [users, total] = await Promise.all([
+      this.AuthModel.find({}).skip(skip).limit(limit).exec(),
+      this.AuthModel.countDocuments(),
+    ]);
+    return { total, users };
   }
 
   async findOneService(id: string): Promise<AuthDocument> {
@@ -88,7 +95,7 @@ export class AuthService {
     let decoded: AppJwtPayload;
     try {
       decoded = await this.jwtService.verifyAsync(refreshToken, {
-        secret: process.env.REFRESH_TOKEN_JWT_SECRET,
+        secret: process.env.REFRESH_TOKEN_JWT_SECRET || 'refresh-token',
       });
     } catch (error) {
       throw new UnauthorizedException('invalid or expired refresh');

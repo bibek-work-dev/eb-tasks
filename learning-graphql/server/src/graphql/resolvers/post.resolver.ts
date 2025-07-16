@@ -1,4 +1,4 @@
-import { GraphQLError, GraphQLResolveInfo } from "graphql";
+import { GraphQLResolveInfo } from "graphql";
 import requireAuth from "../../middlewares/requireauth.middleware.js";
 import { PostModel } from "../../models/post.model.js";
 import { UserModel } from "../../models/user.model.js";
