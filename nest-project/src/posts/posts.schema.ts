@@ -9,6 +9,9 @@ export class Post {
   @Prop({ required: true })
   content: string;
 
+  @Prop({ required: true })
+  imageUrl: string;
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   authorId: Types.ObjectId;
 
@@ -24,6 +27,8 @@ export class Post {
   @Prop({
     type: [
       {
+        _id: false,
+        commentId: { type: Types.ObjectId, ref: 'Comment', required: true },
         commenterName: String,
         comment: String,
         createdAt: { type: Date, default: Date.now },
@@ -32,6 +37,7 @@ export class Post {
     default: [],
   })
   latestComments: {
+    commentId: Types.ObjectId;
     commenterName: string;
     comment: string;
     createdAt: Date;

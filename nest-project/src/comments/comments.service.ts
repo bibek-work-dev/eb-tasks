@@ -31,17 +31,44 @@ export class CommentsService {
       authorId: userId,
       authorName,
     });
+    const miniComment = {
+      commentId: createdComment._id,
+      commenterName: authorName,
+      content: createCommentDto.content,
+      createdAt: new Date(),
+    };
+
+    await this.postModel.findByIdAndUpdate(postId, {
+      $inc: { noOfComments: 1 },
+      $push: {
+        latestComments: {
+          $each: [miniComment],
+          $position: 0,
+          $slice: 5,
+        },
+      },
+    });
+
     return createdComment;
   }
 
-  async findAllCommmentService(): Promise<CommentDocument[]> {
-    const comments = await this.commentModel.find();
-    return comments;
+  async findAllCommentService(
+    page: number,
+    limit: number,
+  ): Promise<{ comments: CommentDocument[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const total = await this.commentModel.countDocuments();
+    const comments = await this.commentModel
+      .find()
+      .skip(skip)
+      .limit(limit)
+      .exec();
+    return { comments, total };
   }
 
   async findOneCommentsService(commentId: string): Promise<CommentDocument> {
     const comment = await this.commentModel.findById(commentId);
-    if (!comment) throw new NotFoundException('Not such Post found');
+    if (!comment) throw new NotFoundException('Not such Comment found');
     return comment;
   }
 
@@ -70,9 +97,16 @@ export class CommentsService {
   ): Promise<CommentDocument> {
     const toBeDeletedComment = await this.commentModel.findById(commentId);
     if (!toBeDeletedComment)
-      throw new NotFoundException('No such comment found');
+      throw new NotFoundException(`Comment with ID ${commentId} not found`);
     await this.ensureCommentOwnerShip(toBeDeletedComment, userId);
     await this.commentModel.findByIdAndDelete(commentId);
+    await this.postModel.findByIdAndUpdate(toBeDeletedComment.postId, {
+      $pull: {
+        latestComments: { commentId: toBeDeletedComment._id },
+      },
+      $inc: { noOfComments: -1 },
+    });
+
     return toBeDeletedComment;
   }
 

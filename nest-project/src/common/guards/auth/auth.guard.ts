@@ -33,7 +33,7 @@ export class AuthGuard implements CanActivate {
       const decoded = this.jwtService.verify<AppJwtPayload>(token, {
         secret: process.env.ACCESS_TOKEN_JWT_SECRET,
       });
-      console.log('decoded', decoded);
+      // console.log('decoded', decoded);
       request.user = decoded;
       return true;
     } catch (error) {

@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -8,16 +9,22 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import * as bcrypt from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
-import { Auth, AuthDocument, AuthSchema } from './auth.schema';
+import { Auth, AuthDocument } from './auth.schema';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { AppJwtPayload } from 'src/common/types/jwtpayload';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { Post, PostDocument } from 'src/posts/posts.schema';
+import { Comment, CommentDocument } from 'src/comments/comments.schema';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(Auth.name) private readonly AuthModel: Model<AuthDocument>,
+    @InjectModel(Post.name) private readonly PostModel: Model<PostDocument>,
+    @InjectModel(Comment.name)
+    private readonly CommentModel: Model<CommentDocument>,
+
     private readonly jwtService: JwtService,
   ) {}
 
@@ -46,7 +53,7 @@ export class AuthService {
     refreshToken: string;
   }> {
     const { email, password } = loginUserDto;
-    const user = await this.AuthModel.findOne({ email });
+    const user = await this.AuthModel.findOne({ email }).select('+password');
     if (!user) {
       throw new ConflictException('Invalid email or password');
     }
@@ -123,11 +130,14 @@ export class AuthService {
   }
 
   async updateUserService(
-    id: string,
+    userIdFromToken: string,
+    userIdFromParam: string,
     updateAuthDto: any,
   ): Promise<AuthDocument> {
+    if (userIdFromParam != userIdFromToken)
+      throw new ForbiddenException("Don't try to update others");
     const toBeUpdatedUser = await this.AuthModel.findByIdAndUpdate(
-      id,
+      userIdFromParam,
       updateAuthDto,
       { new: true },
     );
@@ -137,11 +147,29 @@ export class AuthService {
     return toBeUpdatedUser;
   }
 
-  async deletedUserService(id: string): Promise<AuthDocument> {
-    const deletedUser = await this.AuthModel.findByIdAndDelete(id);
+  async logoutUserService(userId: string) {
+    const loggedOutUser = await this.AuthModel.findByIdAndUpdate(
+      userId,
+      {
+        refreshToken: '',
+      },
+      { new: true },
+    );
+    return loggedOutUser;
+  }
+
+  async deletedUserService(
+    userIdFromToken: string,
+    userIdFromParam: string,
+  ): Promise<AuthDocument> {
+    if (userIdFromParam != userIdFromToken)
+      throw new ForbiddenException("Don't try to delete Others");
+    const deletedUser = await this.AuthModel.findByIdAndDelete(userIdFromParam);
     if (!deletedUser) {
       throw new ConflictException('User not found');
     }
+    await this.PostModel.deleteMany({ authorId: userIdFromParam });
+    await this.CommentModel.deleteMany({ authorId: userIdFromParam });
     return deletedUser;
   }
 

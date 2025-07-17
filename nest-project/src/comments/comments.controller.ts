@@ -7,6 +7,9 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
+  DefaultValuePipe,
+  Query,
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -42,8 +45,12 @@ export class CommentsController {
   }
 
   @Get()
-  async findAll(): CommentResponse<CommentDocument[]> {
-    const comments = await this.commentsService.findAllCommmentService();
+  async findAll(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ): CommentResponse<CommentDocument[]> {
+    const { comments, total } =
+      await this.commentsService.findAllCommentService(page, limit);
     console.log('comments', comments);
     return createApiResponse('Comments fetched successfully', comments);
   }

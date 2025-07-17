@@ -10,16 +10,16 @@ export class Auth {
   @Prop({ required: true })
   email: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, select: false })
   password: string;
 
   @Prop({ type: String, enum: UserRole, default: UserRole.USER })
   role: UserRole;
 
-  @Prop({ type: String })
+  @Prop({ type: String, select: false })
   refreshToken: string;
 
-  @Prop({ type: Date })
+  @Prop({ type: Date, select: false })
   refreshTokenExpiresAt: Date;
 }
 

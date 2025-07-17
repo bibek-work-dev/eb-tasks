@@ -1,4 +1,5 @@
-import { IsString } from 'class-validator';
+import { IsEnum, IsString } from 'class-validator';
+import { UserRole } from 'src/common/types/user-role';
 
 export class RegisterUserDto {
   @IsString()
@@ -9,4 +10,7 @@ export class RegisterUserDto {
 
   @IsString()
   password: string;
+
+  @IsEnum({ default: UserRole.USER })
+  role?: UserRole;
 }

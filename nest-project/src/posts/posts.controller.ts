@@ -7,6 +7,11 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
+  ParseIntPipe,
+  DefaultValuePipe,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -18,6 +23,8 @@ import { ApiResponse } from 'src/common/types/response';
 import { PostDocument } from './posts.schema';
 import { ValidateMongooseObjectIdPipe } from 'src/common/pipes/validate.mongoose.object-id/validate.mongoose.object-id.pipe';
 import { CommentDocument } from 'src/comments/comments.schema';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerOptions } from 'src/common/utils/multer.config';
 
 type PostResponse<T> = Promise<ApiResponse<T>>;
 
@@ -27,7 +34,9 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor('image', multerOptions))
   async createPostController(
+    @UploadedFile() image: Express.Multer.File,
     @Body() createPostDto: CreatePostDto,
     @User('id') userId: string,
     @User('name') authorName: string,
@@ -37,28 +46,52 @@ export class PostsController {
       userId,
       authorName,
       createPostDto,
+      image,
     );
     return createApiResponse('Post Created successfully', post);
   }
 
   @Get()
-  async findAllPostController(): PostResponse<PostDocument[]> {
-    const posts = await this.postsService.findAllPostService();
-    return createApiResponse('All Post fetched successfully', posts);
+  async findAllPostController(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ): Promise<
+    PostResponse<{ posts: PostDocument[]; page: number; total: number }>
+  > {
+    const { posts, total } = await this.postsService.findAllPostService(
+      page,
+      limit,
+    );
+    return createApiResponse('All posts fetched successfully', {
+      total,
+      page,
+      posts,
+    });
   }
 
   @Get(':id/comments')
   async findPostCommentsController(
     @Param('id', ValidateMongooseObjectIdPipe) postId: string,
-  ): PostResponse<CommentDocument[]> {
-    const postComments =
-      await this.postsService.findPostCommentsService(postId);
-    return createApiResponse('Comments Fetched successfully', postComments);
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ): Promise<
+    PostResponse<{ comments: CommentDocument[]; total: number; page: number }>
+  > {
+    const { comments, total } = await this.postsService.findPostCommentsService(
+      postId,
+      page,
+      limit,
+    );
+    return createApiResponse('Comments fetched successfully', {
+      total,
+      page,
+      comments,
+    });
   }
 
   @Get(':id')
   async findOnePostController(
-    @Param('id') postId: string,
+    @Param('id', ValidateMongooseObjectIdPipe) postId: string,
   ): PostResponse<PostDocument> {
     const post = await this.postsService.findOnePostService(postId);
     return createApiResponse('Post Fetched successfully', post);
@@ -66,10 +99,11 @@ export class PostsController {
 
   @Patch(':id')
   async updatePostController(
-    @Param('id') postId: string,
+    @Param('id', ValidateMongooseObjectIdPipe) postId: string,
     @User('id') userId: string,
     @Body() updatePostDto: UpdatePostDto,
   ): PostResponse<PostDocument> {
+    console.log('updatePsotDto', updatePostDto);
     const updatedPost = await this.postsService.updatePostService(
       userId,
       postId,
@@ -80,7 +114,7 @@ export class PostsController {
 
   @Delete(':id')
   async deletePostController(
-    @Param('id') postId: string,
+    @Param('id', ValidateMongooseObjectIdPipe) postId: string,
     @User('id') userId: string,
   ): PostResponse<PostDocument> {
     const deletedPost = await this.postsService.deletePostService(

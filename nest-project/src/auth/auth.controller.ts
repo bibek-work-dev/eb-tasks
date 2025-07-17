@@ -11,6 +11,7 @@ import {
   Query,
   ParseIntPipe,
   DefaultValuePipe,
+  Put,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -31,10 +32,20 @@ export class AuthController {
   async findAllController(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-  ): Promise<ApiResponse<{ users: AuthDocument[]; total: number }>> {
+  ): Promise<
+    ApiResponse<{
+      users: AuthDocument[];
+      total: number;
+      page: number;
+    }>
+  > {
     console.log('first and last', page, limit);
-    const users = await this.authService.findAllService(page, limit);
-    return createApiResponse('All users retrieved successfully', users);
+    const { users, total } = await this.authService.findAllService(page, limit);
+    return createApiResponse('All users retrieved successfully', {
+      total,
+      page,
+      users,
+    });
   }
 
   @Get('me')
@@ -46,9 +57,16 @@ export class AuthController {
     return createApiResponse('You are it', getMe);
   }
 
+  @Get('logout')
+  @UseGuards(AuthGuard)
+  async logoutUserController(@User('id') userId: string) {
+    const loggedOutUser = await this.authService.logoutUserService(userId);
+    return createApiResponse('User logged out successfully', loggedOutUser);
+  }
+
   @Get(':id')
   async findOneController(
-    @Param('id') id: string,
+    @Param('id', ValidateMongooseObjectIdPipe) id: string,
   ): Promise<ApiResponse<AuthDocument>> {
     const user = await this.authService.findOneService(id);
     return createApiResponse<AuthDocument>('User retrieved successfully', user);
@@ -92,11 +110,13 @@ export class AuthController {
   @Patch(':id')
   @UseGuards(AuthGuard)
   async updateUserController(
-    @Param('id', ValidateMongooseObjectIdPipe) id: string,
+    @Param('id', ValidateMongooseObjectIdPipe) userIdFromParam: string,
+    @User('id') userIdFromToken: string,
     @Body() updateAuthDto: UpdateUserDto,
   ): Promise<ApiResponse<AuthDocument>> {
     const updatedUser = await this.authService.updateUserService(
-      id,
+      userIdFromToken,
+      userIdFromParam,
       updateAuthDto,
     );
     return createApiResponse<AuthDocument>(
@@ -108,9 +128,13 @@ export class AuthController {
   @Delete(':id')
   @UseGuards(AuthGuard)
   async deleteUserController(
-    @Param('id') id: string,
+    @Param('id') userIdFromParam: string,
+    @User('id') userIdFromToken: string,
   ): Promise<ApiResponse<AuthDocument>> {
-    const deletedUser = await this.authService.deletedUserService(id);
+    const deletedUser = await this.authService.deletedUserService(
+      userIdFromToken,
+      userIdFromParam,
+    );
     return createApiResponse<AuthDocument>(
       'User deleted successfully',
       deletedUser,
