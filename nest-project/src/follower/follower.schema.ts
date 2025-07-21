@@ -6,6 +6,8 @@ export class Follower {
   @Prop({ type: Types.ObjectId, ref: 'Auth', required: true })
   followerId: Types.ObjectId;
 
+  //
+
   @Prop({ type: Types.ObjectId, ref: 'Auth', required: true })
   followingId: Types.ObjectId;
 }

@@ -69,6 +69,7 @@ export class CommentsController {
     @User('id') userId: string,
     @Body() updateCommentDto: UpdateCommentDto,
   ): CommentResponse<CommentDocument> {
+    // comment ma mongoDb indexing here
     const comment = await this.commentsService.updateCommentService(
       userId,
       commentId,
