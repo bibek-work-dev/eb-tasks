@@ -1,4 +1,3 @@
-// chat/schemas/message.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
@@ -7,8 +6,8 @@ export class Message extends Document {
   @Prop({ required: true })
   fromUserId: string;
 
-  @Prop({ required: true })
-  toUserId: string;
+  @Prop({ required: false })
+  toUserId?: string;
 
   @Prop({ required: true })
   conversationId: string;

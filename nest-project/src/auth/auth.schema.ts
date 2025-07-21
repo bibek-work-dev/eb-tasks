@@ -16,6 +16,12 @@ export class Auth {
   @Prop({ type: String, enum: UserRole, default: UserRole.USER })
   role: UserRole;
 
+  @Prop({ type: Number, default: 0 })
+  followerCount: number;
+
+  @Prop({ type: Number, default: 0 })
+  followingCount: number;
+
   @Prop({ type: String, select: false })
   refreshToken: string;
 

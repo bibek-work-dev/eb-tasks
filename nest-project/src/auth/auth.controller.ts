@@ -103,6 +103,7 @@ export class AuthController {
   async refreshTokenController(
     @Body() refreshTokenDto: RefreshTokenDto,
   ): Promise<ApiResponse<{ accessToken: string; refreshToken: string }>> {
+    console.log('refreshToken', refreshTokenDto);
     const tokens = await this.authService.refreshTokenService(refreshTokenDto);
     return createApiResponse('Token refreshed sucessfully', tokens);
   }

@@ -104,10 +104,14 @@ export class AuthService {
       decoded = await this.jwtService.verifyAsync(refreshToken, {
         secret: process.env.REFRESH_TOKEN_JWT_SECRET || 'refresh-token',
       });
+      console.log('decoded', decoded);
     } catch (error) {
       throw new UnauthorizedException('invalid or expired refresh');
     }
-    const userFromRefreshToken = await this.AuthModel.findById(decoded.id);
+    const userFromRefreshToken = await this.AuthModel.findById(
+      decoded.id,
+    ).select('+refreshToken');
+    console.log('user From Refresh Token', userFromRefreshToken);
     if (!userFromRefreshToken || !userFromRefreshToken.refreshToken)
       throw new UnauthorizedException('User not found');
 

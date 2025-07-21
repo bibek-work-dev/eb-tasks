@@ -8,7 +8,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChatModule } from './chat/chat.module';
 import { LikeDislikeModule } from './posts/like-dislike/like-dislike.module';
-import { FriendsModule } from './friends/friends.module';
+import { FollowerModule } from './follower/follower.module';
+import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { FriendsModule } from './friends/friends.module';
     CommentsModule,
     ChatModule,
     LikeDislikeModule,
-    FriendsModule,
+    FollowerModule,
+    JobsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
