@@ -12,7 +12,7 @@ import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    JwtModule.register({}),
+    JwtModule.register({ secret: process.env.ACCESS_TOKEN_JWT_SECRET }),
     MongooseModule.forFeature([
       { name: Message.name, schema: MessageSchema },
       { name: Conversation.name, schema: ConversationSchema },

@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -28,6 +29,7 @@ export class ChatService {
     createOneToOneChatDto: CreateOneToOneChatDto,
   ): Promise<ConversationDocument> {
     console.log('userId and create one', userId, createOneToOneChatDto);
+
     const participants = [userId, createOneToOneChatDto.participantId].sort();
     let conversation = await this.conversationModel.findOne({
       participants: { $all: participants, $size: 2 },
@@ -36,11 +38,14 @@ export class ChatService {
     });
 
     if (!conversation) {
+      const title = `one to one conversation with ${participants.toString()}`;
       conversation = await this.conversationModel.create({
         participants,
         isGroup: false,
         adminId: userId,
       });
+    } else {
+      throw new ConflictException('The conversation has already been made');
     }
     return conversation;
   }
@@ -49,11 +54,12 @@ export class ChatService {
     userId: string,
     createGroupChatDto: CreateGroupChatDto,
   ): Promise<ConversationDocument> {
-    const { participantIds } = createGroupChatDto;
+    const { participantIds, title } = createGroupChatDto;
     const conversation = await this.conversationModel.create({
       participants: Array.from(new Set([...participantIds, userId])),
       isGroup: true,
       adminId: userId,
+      title,
     });
     return conversation;
   }
