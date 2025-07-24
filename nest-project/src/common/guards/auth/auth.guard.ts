@@ -29,6 +29,7 @@ export class AuthGuard implements CanActivate {
       console.log('real');
       throw new NotFoundException('No token found');
     }
+
     try {
       const decoded = this.jwtService.verify<AppJwtPayload>(token, {
         secret: process.env.ACCESS_TOKEN_JWT_SECRET,

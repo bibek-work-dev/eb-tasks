@@ -17,11 +17,13 @@ import {
   ConversationDocument,
 } from './schemas/conversation.schema';
 import { JwtService } from '@nestjs/jwt';
-import { UsePipes } from '@nestjs/common';
+import { UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OneToOneMessageDto } from './dto/one-to-one-message.dto';
 import { GroupMessageDto } from './dto/group-message.dto';
+import { SocketFilter } from 'src/common/filters/socket/socket.filter';
 
 @WebSocketGateway({ cors: true })
+@UseFilters(SocketFilter)
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly jwtService: JwtService,
@@ -77,15 +79,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log('client disconneted', client.id);
   }
 
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   @SubscribeMessage('one-to-one-message')
-  @UsePipes(OneToOneMessageDto)
   async handleMessage(
-    @MessageBody() payload: { conversationId: string; content: string },
+    @MessageBody() payload: OneToOneMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log('client payload', client);
     console.log('payload', payload);
     const fromUserId = client.data.userId;
+    const { content, conversationId } = payload;
 
     console.log('fromUserId', fromUserId);
 
@@ -96,10 +98,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
       return;
     }
-
-    const { conversationId, content } = payload;
-
-    console.log('conversation Id and content', conversationId, content);
 
     if (!conversationId) {
       client.emit('missing-conversationId', {
@@ -144,19 +142,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       content,
     });
 
-    console.log('message', message);
-
     this.server
       .to(conversationId)
       .emit('new-message', { success: true, data: message });
   }
 
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   @SubscribeMessage('group-message')
-  @UsePipes(GroupMessageDto)
   async handleGroupMessage(
-    @MessageBody() payload: { conversationId: string; content: string },
+    @MessageBody() payload: GroupMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
+    const { content, conversationId } = payload;
     const fromUserId = client.data.userId;
 
     if (!fromUserId) {
@@ -166,8 +163,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
       return;
     }
-
-    const { conversationId, content } = payload;
 
     if (!conversationId || !content) {
       client.emit('invalid-payload', {

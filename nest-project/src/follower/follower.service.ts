@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,6 +9,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Follower, FollowerDocument } from './follower.schema';
 import { Model } from 'mongoose';
 import { Auth, AuthDocument } from 'src/auth/auth.schema';
+import { AcceptFollowRequestDto } from './dto/accept.follow.request.dto';
+import { RejectFollowRequestDto } from './dto/reject.follower.request.dto';
 
 @Injectable()
 export class FollowerService {
@@ -33,20 +36,104 @@ export class FollowerService {
       followerId,
       followingId,
     });
+
     console.log('follow exits or not', existing);
 
-    if (existing)
-      throw new ConflictException('You are already following the user. ');
+    if (existing) {
+      if (existing.status === 'pending') {
+        throw new ConflictException('You already sent a follow request.');
+      }
+      if (existing.status === 'accepted') {
+        throw new ConflictException('You are already following the user.');
+      }
+      if (existing.status === 'rejected') {
+        throw new ConflictException('Your follow request was rejected.');
+      }
+    }
 
     const follow = new this.followerModel({
       followerId,
       followingId,
+      status: 'pending',
     });
 
     await follow.save();
-    await this.incrementFollowerCount(followingId);
-    await this.incrementFollowingCount(followerId);
+    // await this.incrementFollowerCount(followingId);
+    // await this.incrementFollowingCount(followerId);
     return follow;
+  }
+
+  async acceptFollowRequest(
+    userId: string,
+    requestId: string,
+    acceptFollowRequestDto: AcceptFollowRequestDto,
+  ): Promise<FollowerDocument> {
+    const { followerId } = acceptFollowRequestDto;
+    const followRequest = await this.followerModel.findById(requestId);
+
+    if (!followRequest)
+      throw new NotFoundException('No such Follow request was found');
+
+    if (followRequest.status != 'pending')
+      throw new ConflictException("It isn't pending for you to accept");
+
+    if (followRequest.followingId.toString() !== userId)
+      throw new ForbiddenException(
+        'this follow request was intended for other person',
+      );
+
+    if (followRequest.followerId.toString() != followerId)
+      throw new ForbiddenException('There is conflict who sent the followerId');
+
+    const acceptedRequest = await this.followerModel.findByIdAndUpdate(
+      requestId,
+      {
+        status: 'accepted',
+      },
+      { new: true },
+    );
+
+    if (!acceptedRequest) throw new NotFoundException('Something went wrong!!');
+
+    await this.incrementFollowerCount(userId);
+    await this.incrementFollowingCount(followerId);
+
+    return acceptedRequest;
+  }
+
+  async rejectFollowRequest(
+    userId: string,
+    requestId: string,
+    rejectFollowRequestDto: RejectFollowRequestDto,
+  ): Promise<FollowerDocument> {
+    const { followerId } = rejectFollowRequestDto;
+    const followRequest = await this.followerModel.findById(requestId);
+
+    if (!followRequest)
+      throw new NotFoundException('No Follow REquest to reject');
+
+    if (followRequest.status != 'pending')
+      throw new ConflictException("It isn't pending for you to reject");
+
+    if (followRequest.followingId.toString() !== userId)
+      throw new ForbiddenException(
+        "You aren't allowed to change the other's resources",
+      );
+
+    if (followRequest.followerId.toString() != followerId)
+      throw new ForbiddenException('There is conflict who sent the followerId');
+
+    const rejectedRequest = await this.followerModel.findByIdAndUpdate(
+      requestId,
+      {
+        status: 'rejected',
+      },
+      { new: true },
+    );
+
+    if (!rejectedRequest) throw new NotFoundException('Something went wrong!!');
+
+    return rejectedRequest;
   }
 
   async unFollowUserService(
@@ -56,6 +143,7 @@ export class FollowerService {
     const result = await this.followerModel.findOneAndDelete({
       followerId,
       followingId,
+      status: 'accepted',
     });
     if (!result)
       throw new NotFoundException('You havenot followed the user at all');
@@ -66,19 +154,50 @@ export class FollowerService {
     return result;
   }
 
-  async findAllFollowersService(userId: string): Promise<FollowerDocument[]> {
-    const followers = await this.followerModel
-      .find({ followingId: userId })
+  async getAllFollowRequestService(
+    userId: string,
+    page: number,
+    limit: number,
+  ): Promise<FollowerDocument[]> {
+    const skip = (page - 1) * limit;
+    const requests = await this.followerModel
+      .find({ followingId: userId, status: 'pending' })
+      .skip(skip)
+      .limit(limit)
       .populate('followerId', 'username email');
-    return followers;
+    return requests;
   }
 
-  async findAllFollowingService(userId: string): Promise<FollowerDocument[]> {
+  async findAllFollowersService(
+    userId: string,
+    page: number,
+    limit: number,
+  ): Promise<FollowerDocument[]> {
+    const skip = (page - 1) * limit;
+
+    const allFollowers = await this.followerModel
+      .find({ followingId: userId, status: 'accepted' })
+      .skip(skip)
+      .limit(limit)
+      .populate('followerId', 'username email');
+    return allFollowers;
+  }
+
+  async findAllFollowingService(
+    userId: string,
+    page: number,
+    limit: number,
+  ): Promise<FollowerDocument[]> {
+    const skip = (page - 1) * limit;
+
     const allFollowing = await this.followerModel
-      .find({ followerId: userId })
+      .find({ followerId: userId, status: 'accepted' })
+      .skip(skip)
+      .limit(limit)
       .populate('followingId', 'username email');
     return allFollowing;
   }
+
   private async incrementFollowerCount(userId: string) {
     await this.authModel.findByIdAndUpdate(userId, {
       $inc: { followerCount: 1 },

@@ -36,16 +36,14 @@ export class ChatController {
     const messages = await this.chatService.getMessagesForConversationService(
       userId,
       conversationId,
-      +limit,
+      limit,
       page,
     );
     return createApiResponse('Conversation have been fetched', messages);
   }
 
-  // 4️⃣ Get all conversations for a user
   @Get('conversations')
   async findUserConversations(@User('id') userId: string) {
-    console.log('userId', userId);
     const userConversations =
       await this.chatService.findUserConversations(userId);
     return createApiResponse(
