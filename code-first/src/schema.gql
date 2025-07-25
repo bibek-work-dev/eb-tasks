@@ -1,0 +1,84 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+}
+
+type Review {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type MessageResponse {
+  message: String!
+}
+
+type LoginResponse {
+  accessToken: String!
+  refreshToken: String!
+  user: User!
+}
+
+type Subject {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Query {
+  getUsers: [User!]!
+  getUser(id: String!): User!
+  reviews: [Review!]!
+  review(id: Int!): Review!
+  subjects: [Subject!]!
+  subject(id: Int!): Subject!
+}
+
+type Mutation {
+  deleteUser(id: String!): User!
+  createReview(createReviewInput: CreateReviewInput!): Review!
+  updateReview(updateReviewInput: UpdateReviewInput!): Review!
+  removeReview(id: Int!): Review!
+  registerUser(input: RegisterUserInput!): User!
+  loginUser(input: LoginUserInput!): LoginResponse!
+  logoutUser: MessageResponse!
+  createSubject(createSubjectInput: CreateSubjectInput!): Subject!
+  updateSubject(updateSubjectInput: UpdateSubjectInput!): Subject!
+  removeSubject(id: Int!): Subject!
+}
+
+input CreateReviewInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateReviewInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input RegisterUserInput {
+  username: String!
+  email: String!
+  password: String!
+}
+
+input LoginUserInput {
+  email: String!
+  password: String!
+}
+
+input CreateSubjectInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateSubjectInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
