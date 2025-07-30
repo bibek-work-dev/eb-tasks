@@ -1,0 +1,46 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  password: String!
+}
+
+type Todo {
+  id: String!
+  title: String!
+  description: String!
+  created_by: Float!
+}
+
+type Query {
+  getUser(input: Float!): User!
+  getUsers: [User!]!
+  getTodo(id: Float!): Todo!
+  getTodos: [Todo!]!
+}
+
+type Mutation {
+  createUser(input: RegisterUserInput!): User!
+  updateUser(input: UpdateUserInput!): User!
+  deleteUser(id: Float!): User!
+  createTodo: Todo!
+  udpateTodo: Todo!
+  updateTodoToDone: Todo!
+  updateTodoToWillNotDo: Todo!
+  deleteTodo: Todo!
+}
+
+input RegisterUserInput {
+  username: String!
+  email: String!
+  password: String!
+}
+
+input UpdateUserInput {
+  username: String!
+  userId: String!
+}

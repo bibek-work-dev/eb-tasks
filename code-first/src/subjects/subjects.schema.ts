@@ -9,10 +9,10 @@ export class Subject {
   title: string;
 
   @Prop({ required: true })
-  content: string;
+  description: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Course', required: true })
-  course: Types.ObjectId;
+  courseId: Types.ObjectId;
 }
 
 export const SubjectSchema = SchemaFactory.createForClass(Subject);

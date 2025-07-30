@@ -2,15 +2,36 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Course {
+  id: ID!
+  title: String!
+  description: String!
+  price: Float!
+  instructor: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type User {
   id: ID!
   username: String!
   email: String!
+  enrolledCourses: Course!
 }
 
 type Review {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  id: ID!
+  user: ID!
+  course: ID!
+  rating: Int!
+  comment: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type MessageResponse {
@@ -24,41 +45,58 @@ type LoginResponse {
 }
 
 type Subject {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  _id: ID!
+  title: String!
+  description: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type Query {
   getUsers: [User!]!
   getUser(id: String!): User!
-  reviews: [Review!]!
-  review(id: Int!): Review!
-  subjects: [Subject!]!
-  subject(id: Int!): Subject!
+  getCourse(id: String!): Course!
+  getCourses: [Course!]!
+  getReviews: [Review!]!
+  getReview(id: String!): Review!
+  getSubjects: [Subject!]!
+  getSubject(id: String!): Subject!
 }
 
 type Mutation {
   deleteUser(id: String!): User!
+  createCourse(input: CreateCourseInput!): Course!
+  enrollInCourser(input: String!): Course!
+  updateCourse: Course!
+  deleteCourse(id: String!): Course!
   createReview(createReviewInput: CreateReviewInput!): Review!
   updateReview(updateReviewInput: UpdateReviewInput!): Review!
-  removeReview(id: Int!): Review!
+  deleteReview(id: String!): Review!
   registerUser(input: RegisterUserInput!): User!
   loginUser(input: LoginUserInput!): LoginResponse!
   logoutUser: MessageResponse!
-  createSubject(createSubjectInput: CreateSubjectInput!): Subject!
-  updateSubject(updateSubjectInput: UpdateSubjectInput!): Subject!
-  removeSubject(id: Int!): Subject!
+  createSubject(input: CreateSubjectInput!): Subject!
+  updateSubject(input: UpdateSubjectInput!): Subject!
+  deleteSubject(id: String!): Subject!
+}
+
+input CreateCourseInput {
+  title: String!
+  description: String!
+  price: Float!
 }
 
 input CreateReviewInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  course: ID!
+  rating: Int!
+  comment: String
 }
 
 input UpdateReviewInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+  course: ID
+  rating: Int
+  comment: String
+  _id: ID!
 }
 
 input RegisterUserInput {
@@ -73,12 +111,14 @@ input LoginUserInput {
 }
 
 input CreateSubjectInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  title: String!
+  description: String
+  courseId: String!
 }
 
 input UpdateSubjectInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+  title: String
+  description: String
+  courseId: String
+  _id: ID!
 }

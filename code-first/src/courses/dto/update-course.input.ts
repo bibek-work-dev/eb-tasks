@@ -1,8 +1,10 @@
+import { IsMongoId } from 'class-validator';
 import { CreateCourseInput } from './create-course.input';
-import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
+import { InputType, Field, PartialType, ID } from '@nestjs/graphql';
 
 @InputType()
 export class UpdateCourseInput extends PartialType(CreateCourseInput) {
-  @Field(() => Int)
-  id: number;
+  @Field(() => ID)
+  @IsMongoId()
+  _id: string;
 }

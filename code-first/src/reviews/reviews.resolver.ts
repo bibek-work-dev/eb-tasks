@@ -1,35 +1,63 @@
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { ReviewsService } from './reviews.service';
-import { Review } from './entities/review.entity';
 import { CreateReviewInput } from './dto/create-review.input';
 import { UpdateReviewInput } from './dto/update-review.input';
+import { Review } from './reviews.model';
+import { ValidateMongooseIdPipe } from 'src/commons/pipes/validate-mongoose-id/validate-mongoose-id.pipe';
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from 'src/commons/guards/auth/auth.guard';
+import { CurrentUser } from 'src/commons/decorators/current-user/current-user.decorator';
+import { AccessTokenPayload } from 'src/commons/token.service';
 
 @Resolver(() => Review)
 export class ReviewsResolver {
   constructor(private readonly reviewsService: ReviewsService) {}
 
+  @Query(() => [Review])
+  async getReviews() {
+    const result = await this.reviewsService.findAll();
+    return result;
+  }
+
+  @Query(() => Review)
+  async getReview(@Args('id', ValidateMongooseIdPipe) id: string) {
+    const result = await this.reviewsService.findOne(id);
+    return result;
+  }
+
+  @UseGuards(AuthGuard)
   @Mutation(() => Review)
-  createReview(@Args('createReviewInput') createReviewInput: CreateReviewInput) {
-    return this.reviewsService.create(createReviewInput);
+  async createReview(
+    @CurrentUser() user: AccessTokenPayload,
+    @Args('createReviewInput') createReviewInput: CreateReviewInput,
+  ) {
+    const result = await this.reviewsService.create(
+      user.userId,
+      createReviewInput,
+    );
+    return result;
   }
 
-  @Query(() => [Review], { name: 'reviews' })
-  findAll() {
-    return this.reviewsService.findAll();
-  }
-
-  @Query(() => Review, { name: 'review' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.reviewsService.findOne(id);
-  }
-
+  @UseGuards(AuthGuard)
   @Mutation(() => Review)
-  updateReview(@Args('updateReviewInput') updateReviewInput: UpdateReviewInput) {
-    return this.reviewsService.update(updateReviewInput.id, updateReviewInput);
+  async updateReview(
+    @CurrentUser() user: AccessTokenPayload,
+    @Args('updateReviewInput') updateReviewInput: UpdateReviewInput,
+  ) {
+    const result = await this.reviewsService.update(
+      user.userId,
+      updateReviewInput,
+    );
+    return result;
   }
 
+  @UseGuards(AuthGuard)
   @Mutation(() => Review)
-  removeReview(@Args('id', { type: () => Int }) id: number) {
-    return this.reviewsService.remove(id);
+  async deleteReview(
+    @CurrentUser() user: AccessTokenPayload,
+    @Args('id', ValidateMongooseIdPipe) id: string,
+  ) {
+    const result = await this.reviewsService.remove(user.userId, id);
+    return result;
   }
 }

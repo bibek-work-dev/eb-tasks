@@ -1,20 +1,25 @@
-import { Field, ID, Int } from '@nestjs/graphql';
-import { Course } from 'src/courses/courses.model';
-import { User } from 'src/users/users.model';
+import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 
+@ObjectType()
 export class Review {
   @Field(() => ID)
   id: string;
 
+  @Field(() => ID)
+  user: string;
+
+  @Field(() => ID)
+  course: string;
+
   @Field(() => Int)
   rating: number;
 
+  @Field({ nullable: true })
+  comment?: string;
+
   @Field()
-  comment: string;
+  createdAt: Date;
 
-  @Field(() => User)
-  user: User;
-
-  @Field(() => Course)
-  course: Course;
+  @Field()
+  updatedAt: Date;
 }

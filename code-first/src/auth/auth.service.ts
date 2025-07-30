@@ -52,7 +52,10 @@ export class AuthService {
       throw new GraphQLError('Incorrect password');
     }
 
-    const payload = { sub: alreadyExists._id, email: alreadyExists.email };
+    const payload = {
+      userId: alreadyExists._id.toString(),
+      email: alreadyExists.email,
+    };
 
     const accessToken = this.tokenService.createAccessToken(payload);
     const refreshToken = this.tokenService.createRefreshToken(payload);

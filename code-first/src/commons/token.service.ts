@@ -4,13 +4,13 @@ import { Types } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
 
 export interface AccessTokenPayload {
-  sub: Types.ObjectId;
+  userId: string;
   email: string;
 }
 
 export interface RefreshTokenPayload {
-  sub: Types.ObjectId;
   email: string;
+  userId: string;
 }
 
 @Injectable()

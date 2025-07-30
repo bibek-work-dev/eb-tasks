@@ -3,9 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './users.schema';
 import { Model } from 'mongoose';
 import { GraphQLError } from 'graphql';
-import { RegisterUserInput } from '../auth/dto/register-user.input';
-import { LoginUserInput } from '../auth/dto/login-user.input';
-import * as bcryptjs from 'bcryptjs';
 import { UpdateUserInput } from '../auth/dto/update-user.input';
 
 @Injectable()
@@ -30,7 +27,8 @@ export class UsersService {
     return user;
   }
 
-  async deleteUser(id: string): Promise<User> {
+  async deleteUser(userId: string, id: string): Promise<User> {
+    if (userId !== id) throw new GraphQLError('You have no access to that');
     const deletedUser = await this.userModel.findByIdAndDelete(id);
     if (!deletedUser) throw new GraphQLError('No such thing to delete');
     return deletedUser;

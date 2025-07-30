@@ -5,7 +5,7 @@ import { IsEmail, IsString, Length } from 'class-validator';
 export class RegisterUserInput {
   @Field()
   @IsString()
-  @Length(3, 10)
+  @Length(3, 15)
   username: string;
 
   @Field()
