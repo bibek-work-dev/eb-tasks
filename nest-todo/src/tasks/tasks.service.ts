@@ -7,8 +7,13 @@ import { CreateTodoInput } from './dtos/create_todo.dto';
 import { UsersService } from 'src/users/users.service';
 import { UpdateTodoInput } from './dtos/update_todo.dto';
 import { UpdateTodoToDoneInput } from './dtos/update_todo_to_done.dto';
-import { UpdateTodoToWillNotDo } from './dtos/update_todo_to_willnotdo.dto';
+import { UpdateTodoToWillNotDoInput } from './dtos/update_todo_to_willnotdo.dto';
 import { DeleteTodoInput } from './dtos/delete_todo.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { TodoDocument } from './tasks.schema';
+import { Todo } from './tasks.model';
+import { UpdateTodoToPendingInput } from './dtos/update_todo_to_pending.dto';
 
 export enum Status {
   PENDING = 'pending',
@@ -16,106 +21,107 @@ export enum Status {
   WILLNOTDO = 'will-not-do',
 }
 
-export class Todo {
-  id: number;
-  title: string;
-  description: string;
-  created_by: number;
-  status: Status;
-}
-
 @Injectable()
 export class TasksService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    @InjectModel(Todo.name) private todoModel: Model<TodoDocument>,
+  ) {}
 
-  private todos: Todo[] = [];
-
-  findOne(todoId: number) {
-    const index = this.todos.findIndex((each) => each.id === todoId);
-    if (index === -1)
-      throw new NotFoundException("The thing isn't found at all");
-    return this.todos[index];
+  async findOne(todoId: string): Promise<TodoDocument> {
+    const todo = await this.todoModel.findById(todoId).exec();
+    if (!todo) throw new NotFoundException("The todo isn't found");
+    return todo;
   }
 
-  findAll() {
-    return this.todos;
+  async findAll(): Promise<TodoDocument[]> {
+    return this.todoModel.find().exec();
   }
 
-  create(userId: number, createTodoInput: Omit<CreateTodoInput, 'created_by'>) {
-    const nextIndex = this.todos.length + 1;
-    const userExists = this.usersService.users.findIndex(
-      (u) => u.id === userId,
-    );
-    if (userExists === -1) throw new BadRequestException('JPT user halxas!');
-    const newTodo = {
-      id: nextIndex,
+  async create(createTodoInput: CreateTodoInput): Promise<TodoDocument> {
+    const { description, title, userId } = createTodoInput;
+    const user = await this.usersService.findOne(userId);
+    if (!user) throw new BadRequestException('User not found');
+
+    const createdTodo = new this.todoModel({
       ...createTodoInput,
-      created_by: userId,
+      userId: userId,
       status: Status.PENDING,
-    };
-    this.todos.push(newTodo);
-    return newTodo;
+    });
+
+    return createdTodo.save();
   }
 
-  update(updateTodoInput: UpdateTodoInput) {
-    const { description, todoId, title, userId } = updateTodoInput;
-    const index = this.todos.findIndex((each) => each.id === todoId);
-    if (index === -1) throw new NotFoundException('Todo not found!');
-    if (this.todos[index].created_by !== userId)
-      throw new BadRequestException('Unauthorized access!');
-    if (title) this.todos[index].title = title;
-    if (description) this.todos[index].description = description;
-    return this.todos[index];
+  async update(updateTodoInput: UpdateTodoInput) {
+    const { todoId, userId, title, description } = updateTodoInput;
+    const todo = await this.findOne(todoId);
+
+    if (todo.userId.toString() !== userId)
+      throw new BadRequestException('Unauthorized access');
+
+    if (title) todo.title = title;
+    if (description) todo.description = description;
+
+    return todo.save();
   }
 
-  updateToDone(updateToDoToDoneInput: UpdateTodoToDoneInput) {
+  async updateToDone(updateToDoToDoneInput: UpdateTodoToDoneInput) {
     const { todoId, userId } = updateToDoToDoneInput;
-    const index = this.todos.findIndex((each) => each.id === todoId);
-    if (index === -1) throw new NotFoundException('Todo not found!');
-    if (this.todos[index].created_by !== userId)
-      throw new BadRequestException('Unauthorized access!');
-    if (this.todos[index].status !== Status.PENDING)
+    const todo = await this.findOne(todoId);
+
+    if (todo.userId.toString() !== userId)
+      throw new BadRequestException('Unauthorized access');
+
+    if (todo.status !== Status.PENDING)
       throw new BadRequestException('Not in pending state');
 
-    this.todos[index].status = Status.DONE;
-    return this.todos[index];
+    todo.status = Status.DONE;
+    return todo.save();
   }
 
-  updateToWillNotDo(updateToDoToWillNotDo: UpdateTodoToWillNotDo) {
+  async updateToWillNotDo(
+    updateToDoToWillNotDo: UpdateTodoToWillNotDoInput,
+  ): Promise<TodoDocument> {
     const { todoId, userId } = updateToDoToWillNotDo;
-    const index = this.todos.findIndex((each) => each.id === todoId);
-    if (index === -1) throw new NotFoundException('Todo not found!');
-    if (this.todos[index].created_by !== userId)
-      throw new BadRequestException('Unauthorized access!');
-    if (this.todos[index].status !== Status.PENDING)
+    const todo = await this.findOne(todoId);
+
+    if (todo.userId.toString() !== userId)
+      throw new BadRequestException('Unauthorized access');
+
+    if (todo.status !== Status.PENDING)
       throw new BadRequestException('Not in pending state');
 
-    this.todos[index].status = Status.WILLNOTDO;
-    return this.todos[index];
+    todo.status = Status.WILLNOTDO;
+    return todo.save();
   }
 
-  updateToWillPending(updateToDoToWillNotDo: UpdateTodoToWillNotDo) {
-    const { todoId, userId } = updateToDoToWillNotDo;
-    const index = this.todos.findIndex((each) => each.id === todoId);
-    if (index === -1) throw new NotFoundException('Todo not found!');
-    if (this.todos[index].created_by !== userId)
-      throw new BadRequestException('Unauthorized access!');
-    if (this.todos[index].status === Status.PENDING)
+  async updateToWillPending(
+    updateToDoToPendingInput: UpdateTodoToPendingInput,
+  ): Promise<TodoDocument> {
+    const { todoId, userId } = updateToDoToPendingInput;
+    const todo = await this.findOne(todoId);
+
+    if (todo.userId.toString() !== userId)
+      throw new BadRequestException('Unauthorized access');
+
+    if (todo.status === Status.PENDING)
       throw new BadRequestException('Already in pending state');
 
-    this.todos[index].status = Status.PENDING;
-    return this.todos[index];
+    todo.status = Status.PENDING;
+    return todo.save();
   }
 
-  delete(deleteTodoInput: DeleteTodoInput) {
+  async delete(deleteTodoInput: DeleteTodoInput): Promise<TodoDocument> {
     const { todoId, userId } = deleteTodoInput;
-    const index = this.todos.findIndex((each) => each.id === todoId);
-    if (index === -1) throw new NotFoundException('Todo not found!');
-    if (this.todos[index].created_by !== userId)
-      throw new BadRequestException('Unauthorized access!');
+    const todo = await this.todoModel.findById(todoId);
 
-    const deleted = this.todos[index];
-    this.todos = this.todos.filter((todo) => todo.id !== todoId);
-    return deleted;
+    if (!todo) throw new NotFoundException('No such todo found');
+
+    if (todo.userId.toString() != userId)
+      throw new BadRequestException('Unauthorized access');
+
+    const updatedTodo = await this.todoModel.findByIdAndDelete(todoId).exec();
+    if (!updatedTodo) throw new NotFoundException('No such todo found');
+    return updatedTodo;
   }
 }

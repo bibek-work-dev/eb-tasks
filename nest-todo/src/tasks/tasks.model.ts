@@ -1,8 +1,19 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { User } from 'src/users/users.model';
+
+export enum Status {
+  PENDING = 'pending',
+  DONE = 'done',
+  WILLNOTDO = 'will-not-do',
+}
+
+registerEnumType(Status, {
+  name: 'Status',
+});
 
 @ObjectType()
 export class Todo {
-  @Field()
+  @Field(() => ID)
   id: string;
 
   @Field()
@@ -11,6 +22,12 @@ export class Todo {
   @Field()
   description: string;
 
-  @Field()
-  created_by: number;
+  @Field(() => String)
+  userId: string;
+
+  @Field(() => User)
+  user: User;
+
+  @Field(() => Status)
+  status: Status;
 }

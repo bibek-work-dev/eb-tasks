@@ -10,7 +10,7 @@ export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
   @Query(() => User)
-  async getUser(@Args('input', ParseIntPipe) userId: number) {
+  async getUser(@Args('input') userId: string) {
     const result = this.usersService.findOne(userId);
     return result;
   }

@@ -1,53 +1,63 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { RegisterUserInput } from './dtos/register_user.dto';
 import { UpdateUserInput } from './dtos/update_user.dto';
-
-export class User {
-  id: number;
-  username: string;
-  email: string;
-  password: string;
-}
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User, UserDocument } from './users.schema';
 
 @Injectable()
 export class UsersService {
-  constructor() {}
-  users: User[] = [];
-
-  findAll(): User[] {
-    return this.users;
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {
+    console.log('this is the instantianted');
   }
 
-  findOne(userId: number) {
-    const user = this.users.find((each) => each.id === userId);
+  async findAll(): Promise<UserDocument[]> {
+    const result = await this.userModel.find().exec();
+    return result;
+  }
+
+  async findOne(userId: string): Promise<UserDocument> {
+    const user = await this.userModel.findOne({ _id: userId }).exec();
     if (!user) throw new NotFoundException('No such user found');
     return user;
   }
 
-  create(registerUserInput: RegisterUserInput) {
-    const nextId = this.users.length + 1;
-    const newUser = { id: nextId, ...registerUserInput };
-    this.users.push(newUser);
-    return newUser;
+  async create(registerUserInput: RegisterUserInput): Promise<UserDocument> {
+    const { email, password, username } = registerUserInput;
+
+    if (!email || !username || !password) {
+      throw new BadRequestException(
+        'Email, username, and password are required',
+      );
+    }
+
+    const existingUser = await this.userModel.findOne({ email }).exec();
+    if (existingUser) {
+      throw new BadRequestException('Email already in use');
+    }
+
+    const createdUser = new this.userModel(registerUserInput);
+    return createdUser.save();
   }
 
-  update(updateUserInput: UpdateUserInput) {
-    const { username, userId } = updateUserInput;
-    const index = this.users.findIndex((user) => user.id === userId);
-    if (index === -1) throw new NotFoundException('User not found');
+  async update(updateUserInput: UpdateUserInput): Promise<UserDocument> {
+    const { userId, username } = updateUserInput;
 
-    if (username) this.users[index].username = updateUserInput.username;
-    return this.users[index];
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) throw new NotFoundException('User not found');
+
+    if (username) user.username = username;
+
+    return user.save();
   }
 
-  delete(userId: number) {
-    const toDeleteIndex = this.users.findIndex((each) => each.id == userId);
-    console.log('deletedUser', toDeleteIndex);
-    if (toDeleteIndex === -1)
-      throw new NotFoundException('No such user found to be deleted');
-
-    const deletedUser = this.users[toDeleteIndex];
-    this.users = this.users.filter((each) => each.id !== userId);
-    return deletedUser;
+  async delete(userId: number): Promise<UserDocument> {
+    const user = await this.userModel.findByIdAndDelete(userId).exec();
+    if (!user) throw new NotFoundException('No such user found to be deleted');
+    return user;
   }
 }

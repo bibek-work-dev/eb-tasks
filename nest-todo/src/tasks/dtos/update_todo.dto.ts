@@ -1,15 +1,17 @@
 import { Field, ID, InputType } from '@nestjs/graphql';
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
 
 @InputType()
 export class UpdateTodoInput {
   @Field(() => ID)
   @IsNotEmpty()
-  todoId: number;
+  @IsMongoId()
+  todoId: string;
 
   @Field()
   @IsNotEmpty()
-  userId: number;
+  @IsMongoId()
+  userId: string;
 
   @Field()
   @IsOptional()

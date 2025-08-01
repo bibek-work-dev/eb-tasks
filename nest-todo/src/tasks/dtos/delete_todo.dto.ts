@@ -1,12 +1,15 @@
-import { Field } from '@nestjs/graphql';
-import { IsNotEmpty } from 'class-validator';
+import { Field, InputType } from '@nestjs/graphql';
+import { IsMongoId, IsNotEmpty } from 'class-validator';
 
+@InputType()
 export class DeleteTodoInput {
   @Field()
+  @IsMongoId()
   @IsNotEmpty()
-  userId: number;
+  userId: string;
 
   @Field()
+  @IsMongoId()
   @IsNotEmpty()
-  todoId: number;
+  todoId: string;
 }

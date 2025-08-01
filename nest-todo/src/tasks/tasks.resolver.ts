@@ -1,60 +1,91 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { TasksService } from './tasks.service';
 import { CreateTodoInput } from './dtos/create_todo.dto';
-import { BadRequestException, ParseIntPipe } from '@nestjs/common';
 import { UpdateTodoToDoneInput } from './dtos/update_todo_to_done.dto';
-import { UpdateTodoToWillNotDo } from './dtos/update_todo_to_willnotdo.dto';
 import { DeleteTodoInput } from './dtos/delete_todo.dto';
 import { UpdateTodoInput } from './dtos/update_todo.dto';
 import { Todo } from './tasks.model';
+import { User } from 'src/users/users.model';
+import { UsersService } from 'src/users/users.service';
+import { UpdateTodoToPendingInput } from './dtos/update_todo_to_pending.dto';
+import { UpdateTodoToWillNotDoInput } from './dtos/update_todo_to_willnotdo.dto';
+import { UserDocument } from 'src/users/users.schema';
 
 @Resolver(() => Todo)
 export class TasksResolver {
-  constructor(private readonly tasksService: TasksService) {}
+  constructor(
+    private readonly tasksService: TasksService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Query(() => Todo)
-  async getTodo(@Args('id', ParseIntPipe) id: number) {
-    const result = this.tasksService.findOne(id);
+  async getTodo(@Args('id') id: string) {
+    const result = await this.tasksService.findOne(id);
     return result;
   }
 
   @Query(() => [Todo])
   async getTodos() {
-    const result = this.tasksService.findAll();
+    const result = await this.tasksService.findAll();
     return result;
   }
 
   @Mutation(() => Todo)
-  async createTodo(createTodoInput: CreateTodoInput) {
-    const { created_by, ...rest } = createTodoInput;
-    const createdBy = parseInt(created_by);
-    if (Number.isNaN(createdBy))
-      throw new BadRequestException('Incorrect userId');
-    const result = this.tasksService.create(createdBy, rest);
+  async createTodo(@Args('input') createTodoInput: CreateTodoInput) {
+    const result = await this.tasksService.create(createTodoInput);
     return result;
   }
 
   @Mutation(() => Todo)
-  async udpateTodo(updateTodoInput: UpdateTodoInput) {
-    const updatedTodo = this.tasksService.update(updateTodoInput);
+  async udpateTodo(@Args('input') updateTodoInput: UpdateTodoInput) {
+    const updatedTodo = await this.tasksService.update(updateTodoInput);
     return updatedTodo;
   }
 
   @Mutation(() => Todo)
-  async updateTodoToDone(updateToDoToDoneInput: UpdateTodoToDoneInput) {
+  async updateTodoToDone(
+    @Args('input') updateToDoToDoneInput: UpdateTodoToDoneInput,
+  ) {
     const result = this.tasksService.updateToDone(updateToDoToDoneInput);
     return result;
   }
 
   @Mutation(() => Todo)
-  updateTodoToWillNotDo(updateTodoToWillNotDo: UpdateTodoToWillNotDo) {
-    const result = this.tasksService.updateToWillNotDo(updateTodoToWillNotDo);
+  updateTodoToWillNotDo(
+    @Args('input') updateTodoToWillNotDoInput: UpdateTodoToWillNotDoInput,
+  ) {
+    const result = this.tasksService.updateToWillNotDo(
+      updateTodoToWillNotDoInput,
+    );
     return result;
   }
 
   @Mutation(() => Todo)
-  async deleteTodo(deleteTodoInput: DeleteTodoInput) {
-    const result = this.tasksService.delete(deleteTodoInput);
+  updateToDoToPending(
+    @Args('input') updateTodoToPendingInput: UpdateTodoToPendingInput,
+  ) {
+    const result = this.tasksService.updateToWillPending(
+      updateTodoToPendingInput,
+    );
     return result;
+  }
+
+  @Mutation(() => Todo)
+  async deleteTodo(@Args('input') deleteTodoInput: DeleteTodoInput) {
+    const result = await this.tasksService.delete(deleteTodoInput);
+    return result;
+  }
+
+  @ResolveField(() => User, { name: 'user' })
+  async resolveCreatedField(@Parent() todo: Todo): Promise<UserDocument> {
+    console.log('todo', todo);
+    return await this.usersService.findOne(todo.userId);
   }
 }
