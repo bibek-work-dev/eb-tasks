@@ -5,6 +5,7 @@ import {
   Args,
   ResolveField,
   Parent,
+  Subscription,
 } from '@nestjs/graphql';
 import { TasksService } from './tasks.service';
 import { CreateTodoInput } from './dtos/create_todo.dto';
@@ -17,12 +18,15 @@ import { UsersService } from 'src/users/users.service';
 import { UpdateTodoToPendingInput } from './dtos/update_todo_to_pending.dto';
 import { UpdateTodoToWillNotDoInput } from './dtos/update_todo_to_willnotdo.dto';
 import { UserDocument } from 'src/users/users.schema';
+import { PubSub } from 'graphql-subscriptions';
+import { Inject } from '@nestjs/common';
 
 @Resolver(() => Todo)
 export class TasksResolver {
   constructor(
     private readonly tasksService: TasksService,
     private readonly usersService: UsersService,
+       @Inject('PUB_SUB') private pubSub: PubSub,
   ) {}
 
   @Query(() => Todo)
@@ -40,8 +44,13 @@ export class TasksResolver {
   @Mutation(() => Todo)
   async createTodo(@Args('input') createTodoInput: CreateTodoInput) {
     const result = await this.tasksService.create(createTodoInput);
+    await this.pubSub.publish("taskCreated", {taskCreated: result})
     return result;
   }
+
+  @Subscription(() => Todo, {
+    name: "taskCreated"
+  })
 
   @Mutation(() => Todo)
   async udpateTodo(@Args('input') updateTodoInput: UpdateTodoInput) {
@@ -80,8 +89,18 @@ export class TasksResolver {
   @Mutation(() => Todo)
   async deleteTodo(@Args('input') deleteTodoInput: DeleteTodoInput) {
     const result = await this.tasksService.delete(deleteTodoInput);
+      await this.pubSub.publish('taskDeleted', {
+    taskDeleted: result,
+  });
     return result;
   }
+
+  @Subscription(() => Todo, {
+  name: 'taskDeleted',
+})
+taskDeleted() {
+  return this.pubSub.asyncIterableIterator('taskDeleted');
+}
 
   @ResolveField(() => User, { name: 'user' })
   async resolveCreatedField(@Parent() todo: Todo): Promise<UserDocument> {
