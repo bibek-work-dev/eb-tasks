@@ -24,11 +24,17 @@ enum Status {
   WILLNOTDO
 }
 
+type Auth {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
 type Query {
   getUser(input: String!): User!
   getUsers: [User!]!
   getTodo(id: String!): Todo!
   getTodos: [Todo!]!
+  auth(id: Int!): Auth!
 }
 
 type Mutation {
@@ -41,6 +47,9 @@ type Mutation {
   updateTodoToWillNotDo(input: UpdateTodoToWillNotDoInput!): Todo!
   updateToDoToPending(input: UpdateTodoToPendingInput!): Todo!
   deleteTodo(input: DeleteTodoInput!): Todo!
+  createAuth(createAuthInput: CreateAuthInput!): Auth!
+  updateAuth(updateAuthInput: UpdateAuthInput!): Auth!
+  removeAuth(id: Int!): Auth!
 }
 
 input RegisterUserInput {
@@ -85,4 +94,20 @@ input UpdateTodoToPendingInput {
 input DeleteTodoInput {
   userId: String!
   todoId: String!
+}
+
+input CreateAuthInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateAuthInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+type Subscription {
+  taskCreated: Todo!
+  taskDeleted: Todo!
 }

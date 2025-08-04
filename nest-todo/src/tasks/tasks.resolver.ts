@@ -26,7 +26,7 @@ export class TasksResolver {
   constructor(
     private readonly tasksService: TasksService,
     private readonly usersService: UsersService,
-       @Inject('PUB_SUB') private pubSub: PubSub,
+    @Inject('PUB_SUB') private pubSub: PubSub,
   ) {}
 
   @Query(() => Todo)
@@ -44,13 +44,13 @@ export class TasksResolver {
   @Mutation(() => Todo)
   async createTodo(@Args('input') createTodoInput: CreateTodoInput) {
     const result = await this.tasksService.create(createTodoInput);
-    await this.pubSub.publish("taskCreated", {taskCreated: result})
+
+    await this.pubSub.publish('taskCreated', {
+      taskCreated: result,
+      message: 'The task has been created',
+    });
     return result;
   }
-
-  @Subscription(() => Todo, {
-    name: "taskCreated"
-  })
 
   @Mutation(() => Todo)
   async udpateTodo(@Args('input') updateTodoInput: UpdateTodoInput) {
@@ -89,22 +89,30 @@ export class TasksResolver {
   @Mutation(() => Todo)
   async deleteTodo(@Args('input') deleteTodoInput: DeleteTodoInput) {
     const result = await this.tasksService.delete(deleteTodoInput);
-      await this.pubSub.publish('taskDeleted', {
-    taskDeleted: result,
-  });
+    await this.pubSub.publish('taskDeleted', {
+      message: 'The task has been deleted',
+      taskDeleted: result,
+    });
     return result;
   }
-
-  @Subscription(() => Todo, {
-  name: 'taskDeleted',
-})
-taskDeleted() {
-  return this.pubSub.asyncIterableIterator('taskDeleted');
-}
 
   @ResolveField(() => User, { name: 'user' })
   async resolveCreatedField(@Parent() todo: Todo): Promise<UserDocument> {
     console.log('todo', todo);
     return await this.usersService.findOne(todo.userId);
+  }
+
+  @Subscription(() => Todo, {
+    name: 'taskCreated',
+  })
+  taskCreated() {
+    return this.pubSub.asyncIterableIterator('taskCreated');
+  }
+
+  @Subscription(() => Todo, {
+    name: 'taskDeleted',
+  })
+  taskDeleted() {
+    return this.pubSub.asyncIterableIterator('taskDeleted');
   }
 }
