@@ -14,7 +14,7 @@ export class TokenService {
     private readonly configService: ConfigService,
   ) {}
 
-  createAccessToken(payload: AccessTokenPayload): string {
+  createAccessToken(payload: Omit<AccessTokenPayload, 'jti'>): string {
     const jti = uuidv4();
     const secret = this.configService.get<string>('ACCESS_JWT_SECRET');
     const expiresIn = this.configService.get<string>('ACCESS_JWT_EXPIRESIN');
@@ -27,7 +27,7 @@ export class TokenService {
     );
   }
 
-  createRefreshToken(payload: RefreshTokenPayload): string {
+  createRefreshToken(payload: Omit<RefreshTokenPayload, 'jti'>): string {
     return this.jwtService.sign(payload, {
       secret: this.configService.get('REFRESH_JWT_SECRET'),
       expiresIn: this.configService.get('REFRESH_JWT_EXPIRESIN'),

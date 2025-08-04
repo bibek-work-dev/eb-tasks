@@ -28,5 +28,9 @@ export class AuthResolver {
   }
 
   @Mutation(() => LogoutResponse)
-  async logoutUser(@CurrentUser() user: AccessTokenPayload)
+  async logoutUser(@CurrentUser() user: AccessTokenPayload) {
+    console.log('user in logout', user);
+    const result = await this.authService.logout(user);
+    return result;
+  }
 }

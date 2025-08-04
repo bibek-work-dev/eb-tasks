@@ -12,6 +12,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { LoginUserInput } from './dtos/login-user.input';
 import * as bcryptjs from 'bcryptjs';
 import { TokenService } from 'src/commons/services/token.service';
+import { AccessTokenPayload } from 'src/commons/types/token-payload.types';
 
 @Injectable()
 export class AuthService {
@@ -81,5 +82,9 @@ export class AuthService {
       access_token: accessToken,
       refresh_token: refreshToken,
     };
+  }
+
+  async logoutUser(user: AccessTokenPayload): String {
+    const { email, jti, userId } = user;
   }
 }
