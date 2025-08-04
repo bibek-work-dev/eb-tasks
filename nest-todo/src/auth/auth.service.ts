@@ -1,6 +1,8 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { RegisterUserInput } from './dtos/register-user.input';
@@ -18,19 +20,6 @@ export class AuthService {
     private readonly tokenService: TokenService,
   ) {
     console.log('this is the auth service');
-  }
-
-  async validateUser(email: string, password: string) {
-    console.log('validateUser service');
-    const user = await this.userModel.findOne({ email });
-    console.log('user', user);
-    if (!user) return null;
-    const passwordMatch = await bcryptjs.compare(password, user.password);
-    console.log('password Match', passwordMatch);
-    if (!passwordMatch) return null;
-    const { password: _, ...userWithoutPassword } = user.toObject();
-    userWithoutPassword._id = user._id;
-    return userWithoutPassword;
   }
 
   async register(registerUserInput: RegisterUserInput): Promise<UserDocument> {
@@ -57,14 +46,20 @@ export class AuthService {
   }
 
   async login(loginUserInput: LoginUserInput) {
-    const user = await this.validateUser(
-      loginUserInput.email,
-      loginUserInput.password,
-    );
-    console.log('lgoin data', user);
+    const { email, password } = loginUserInput;
+    const user = await this.userModel.findOne({ email });
+    console.log('user', user);
+
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new NotFoundException('No such user found');
     }
+
+    const passwordMatch = await bcryptjs.compare(password, user.password);
+    console.log('password Match', passwordMatch);
+    if (!passwordMatch) {
+      throw new ConflictException("Credentials don't match");
+    }
+
     const accessToken = this.tokenService.createAccessToken({
       userId: (user._id as Types.ObjectId).toString(),
       email: user.email,
@@ -74,6 +69,9 @@ export class AuthService {
       userId: (user._id as Types.ObjectId).toString(),
       email: user.email,
     });
+
+    user.refreshToken = refreshToken;
+    await user.save();
 
     console.log('access_token', accessToken);
     console.log('refreshToken', refreshToken);

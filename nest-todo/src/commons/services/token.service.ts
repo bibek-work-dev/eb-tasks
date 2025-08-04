@@ -5,6 +5,7 @@ import {
   AccessTokenPayload,
   RefreshTokenPayload,
 } from '../types/token-payload.types';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class TokenService {
@@ -14,10 +15,16 @@ export class TokenService {
   ) {}
 
   createAccessToken(payload: AccessTokenPayload): string {
-    return this.jwtService.sign(payload, {
-      secret: this.configService.get('ACCESS_JWT_SECRET'),
-      expiresIn: this.configService.get('ACCESS_JWT_EXPIRESIN'),
-    });
+    const jti = uuidv4();
+    const secret = this.configService.get<string>('ACCESS_JWT_SECRET');
+    const expiresIn = this.configService.get<string>('ACCESS_JWT_EXPIRESIN');
+    return this.jwtService.sign(
+      { ...payload, jti },
+      {
+        secret: secret,
+        expiresIn: expiresIn,
+      },
+    );
   }
 
   createRefreshToken(payload: RefreshTokenPayload): string {
