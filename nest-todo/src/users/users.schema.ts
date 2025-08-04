@@ -28,6 +28,12 @@ export class User {
 
   @Prop({ required: true })
   password: string;
+
+  @Prop({ required: false })
+  refreshToken: string;
+
+  @Prop({ required: false, type: Date })
+  refreshTokenExpiresAt: Date;
 }
 
 export type UserDocument = User & Document;

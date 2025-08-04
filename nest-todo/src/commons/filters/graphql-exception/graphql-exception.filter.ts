@@ -43,6 +43,7 @@ export class GraphqlExceptionFilter implements ExceptionFilter {
     const path = info?.fieldName || null;
 
     console.log('Here is the erorr from exception filter');
+    console.error('GraphqlExceptionFilter caught exception:', exception);
 
     const timestamp = new Date().toISOString();
 

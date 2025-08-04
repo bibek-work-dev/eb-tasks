@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { RegisterUserInput } from './dtos/register_user.dto';
 import { UpdateUserInput } from './dtos/update_user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -12,7 +11,7 @@ import { User, UserDocument } from './users.schema';
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {
-    console.log('this is the instantianted');
+    console.log('this is the user service');
   }
 
   async findAll(): Promise<UserDocument[]> {
@@ -24,24 +23,6 @@ export class UsersService {
     const user = await this.userModel.findOne({ _id: userId }).exec();
     if (!user) throw new NotFoundException('No such user found');
     return user;
-  }
-
-  async create(registerUserInput: RegisterUserInput): Promise<UserDocument> {
-    const { email, password, username } = registerUserInput;
-
-    if (!email || !username || !password) {
-      throw new BadRequestException(
-        'Email, username, and password are required',
-      );
-    }
-
-    const existingUser = await this.userModel.findOne({ email }).exec();
-    if (existingUser) {
-      throw new BadRequestException('Email already in use');
-    }
-
-    const createdUser = new this.userModel(registerUserInput);
-    return createdUser.save();
   }
 
   async update(updateUserInput: UpdateUserInput): Promise<UserDocument> {

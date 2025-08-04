@@ -1,35 +1,27 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
-import { Auth } from './entities/auth.entity';
-import { CreateAuthInput } from './dto/create-auth.input';
-import { UpdateAuthInput } from './dto/update-auth.input';
+import { User } from 'src/users/users.model';
+import { RegisterUserInput } from './dtos/register-user.input';
+import { LoginUserInput } from './dtos/login-user.input';
+import { LoginUserResponse } from './responses/login_user.response';
+import { RegisterUserResponse } from './responses/register_user.response';
 
-@Resolver(() => Auth)
+@Resolver(() => User)
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
-  @Mutation(() => Auth)
-  createAuth(@Args('createAuthInput') createAuthInput: CreateAuthInput) {
-    return this.authService.create(createAuthInput);
+  @Mutation(() => RegisterUserResponse)
+  async registerUser(@Args('input') registerUserInput: RegisterUserInput) {
+    console.log('registerUserInput', registerUserInput);
+    const result = await this.authService.register(registerUserInput);
+    return { user: result };
   }
 
-  @Query(() => [Auth], { name: 'auth' })
-  findAll() {
-    return this.authService.findAll();
-  }
-
-  @Query(() => Auth, { name: 'auth' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.authService.findOne(id);
-  }
-
-  @Mutation(() => Auth)
-  updateAuth(@Args('updateAuthInput') updateAuthInput: UpdateAuthInput) {
-    return this.authService.update(updateAuthInput.id, updateAuthInput);
-  }
-
-  @Mutation(() => Auth)
-  removeAuth(@Args('id', { type: () => Int }) id: number) {
-    return this.authService.remove(id);
+  @Mutation(() => LoginUserResponse)
+  async loginUser(@Args('input') loginUserInput: LoginUserInput) {
+    console.log('loginUserInput', loginUserInput);
+    const result = await this.authService.login(loginUserInput);
+    console.log('result in loginUserResponse', result);
+    return result;
   }
 }

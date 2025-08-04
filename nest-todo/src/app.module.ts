@@ -27,13 +27,15 @@ import { AuthModule } from './auth/auth.module';
       driver: ApolloDriver,
       autoSchemaFile: 'schema.gql',
       playground: false,
+      context: ({ req }) => ({ req }),
+
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
       subscriptions: {
         'graphql-ws': true,
       },
       formatError: (error: GraphQLError) => {
         const { message, extensions, path } = error;
-        console.log('Here is the app module');
+        console.log('Here is the app module level formatting');
         return {
           message,
           code: extensions?.code || 'INTERNAL_SERVER_ERROR',

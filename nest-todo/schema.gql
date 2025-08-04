@@ -24,9 +24,14 @@ enum Status {
   WILLNOTDO
 }
 
-type Auth {
-  """Example field (placeholder)"""
-  exampleField: Int!
+type LoginUserResponse {
+  access_token: String!
+  refresh_token: String!
+  user: User!
+}
+
+type RegisterUserResponse {
+  user: User!
 }
 
 type Query {
@@ -34,11 +39,9 @@ type Query {
   getUsers: [User!]!
   getTodo(id: String!): Todo!
   getTodos: [Todo!]!
-  auth(id: Int!): Auth!
 }
 
 type Mutation {
-  createUser(input: RegisterUserInput!): User!
   updateUser(input: UpdateUserInput!): User!
   deleteUser(id: Float!): User!
   createTodo(input: CreateTodoInput!): Todo!
@@ -47,15 +50,8 @@ type Mutation {
   updateTodoToWillNotDo(input: UpdateTodoToWillNotDoInput!): Todo!
   updateToDoToPending(input: UpdateTodoToPendingInput!): Todo!
   deleteTodo(input: DeleteTodoInput!): Todo!
-  createAuth(createAuthInput: CreateAuthInput!): Auth!
-  updateAuth(updateAuthInput: UpdateAuthInput!): Auth!
-  removeAuth(id: Int!): Auth!
-}
-
-input RegisterUserInput {
-  username: String!
-  email: String!
-  password: String!
+  registerUser(input: RegisterUserInput!): RegisterUserResponse!
+  loginUser(input: LoginUserInput!): LoginUserResponse!
 }
 
 input UpdateUserInput {
@@ -96,15 +92,15 @@ input DeleteTodoInput {
   todoId: String!
 }
 
-input CreateAuthInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+input RegisterUserInput {
+  username: String!
+  email: String!
+  password: String!
 }
 
-input UpdateAuthInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+input LoginUserInput {
+  email: String!
+  password: String!
 }
 
 type Subscription {

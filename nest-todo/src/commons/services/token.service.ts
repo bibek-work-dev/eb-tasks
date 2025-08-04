@@ -1,16 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-
-export interface AccessTokenPayload {
-  userId: string;
-  email: string;
-}
-
-export interface RefreshTokenPayload {
-  email: string;
-  userId: string;
-}
+import {
+  AccessTokenPayload,
+  RefreshTokenPayload,
+} from '../types/token-payload.types';
 
 @Injectable()
 export class TokenService {

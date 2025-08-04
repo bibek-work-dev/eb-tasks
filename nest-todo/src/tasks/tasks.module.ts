@@ -11,11 +11,13 @@ import { PubSub } from 'graphql-subscriptions';
     UsersModule,
     MongooseModule.forFeature([{ name: Todo.name, schema: TodoSchema }]),
   ],
-  providers: [TasksResolver,
-        {
+  providers: [
+    TasksResolver,
+    {
       provide: 'PUB_SUB',
       useValue: new PubSub(),
     },
-    TasksService],
+    TasksService,
+  ],
 })
 export class TasksModule {}
