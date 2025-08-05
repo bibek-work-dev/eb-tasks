@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { PassportStrategy } from '@nestjs/passport';
@@ -6,12 +6,13 @@ import { Model } from 'mongoose';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AccessTokenPayload } from 'src/commons/types/token-payload.types';
 import { User, UserDocument } from 'src/users/users.schema';
+import { Jti, JtiDocument } from '../jti.schema';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Jti.name) private jtiModel: Model<JtiDocument>,
   ) {
     const secret = configService.get<string>('ACCESS_JWT_SECRET');
     console.log('get secret', secret);
@@ -26,13 +27,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     console.log('here it is initailzed');
   }
   async validate(payload: AccessTokenPayload) {
-    console.log('payload in jwt strategy', payload);
-    const user = await this.userModel.findById(payload.userId).exec();
-    console.log('user in validate in jwt strategy', user);
-    if (!user) {
-      console.log('aayo yeha hai');
-      return null;
+    // console.log('payload in jwt strategy', payload);
+    const { jti, userId } = payload;
+    const activeJti = await this.jtiModel.findOne({ jti: jti });
+    if (!activeJti) {
+      throw new UnauthorizedException("You don't have jti at all");
     }
-    return user;
+    return payload;
   }
 }

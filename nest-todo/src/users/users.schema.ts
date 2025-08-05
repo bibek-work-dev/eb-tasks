@@ -34,6 +34,12 @@ export class User {
 
   @Prop({ required: false, type: Date })
   refreshTokenExpiresAt: Date;
+
+  @Prop({ default: null })
+  lastLogin: Date;
+
+  @Prop({ default: 0 })
+  loggedInTimes: number;
 }
 
 export type UserDocument = User & Document;

@@ -3,11 +3,6 @@ import { IsMongoId, IsNotEmpty, Length } from 'class-validator';
 
 @InputType()
 export class CreateTodoInput {
-  @Field(() => String)
-  @IsMongoId()
-  @IsNotEmpty()
-  userId: string;
-
   @Field()
   @IsNotEmpty()
   @Length(3, 15)

@@ -8,11 +8,8 @@ export class Jti {
   @Prop({ required: true, unique: true })
   jti: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   userId: string;
-
-  @Prop({ default: false })
-  revoked: boolean;
 }
 
 export const JtiSchema = SchemaFactory.createForClass(Jti);

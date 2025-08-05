@@ -3,17 +3,19 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateTodoInput } from './dtos/create_todo.dto';
+import { CreateTodoInput } from './dtos/create_todo.input';
 import { UsersService } from 'src/users/users.service';
-import { UpdateTodoInput } from './dtos/update_todo.dto';
-import { UpdateTodoToDoneInput } from './dtos/update_todo_to_done.dto';
-import { UpdateTodoToWillNotDoInput } from './dtos/update_todo_to_willnotdo.dto';
-import { DeleteTodoInput } from './dtos/delete_todo.dto';
+import { UpdateTodoInput } from './dtos/update_todo.input';
+import { UpdateTodoToDoneInput } from './dtos/update_todo_to_done.input';
+import { UpdateTodoToWillNotDoInput } from './dtos/update_todo_to_willnotdo.input';
+import { DeleteTodoInput } from './dtos/delete_todo.input';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TodoDocument } from './tasks.schema';
 import { Todo } from './tasks.model';
-import { UpdateTodoToPendingInput } from './dtos/update_todo_to_pending.dto';
+import { UpdateTodoToPendingInput } from './dtos/update_todo_to_pending.input';
+import { AccessTokenPayload } from 'src/commons/types/token-payload.types';
+import { GetTodoInput } from './dtos/get_todo.input';
 
 export enum Status {
   PENDING = 'pending',
@@ -34,12 +36,28 @@ export class TasksService {
     return todo;
   }
 
-  async findAll(): Promise<TodoDocument[]> {
-    return this.todoModel.find().exec();
+  async findAll(
+    userFromToken: AccessTokenPayload,
+    filter?: GetTodoInput,
+  ): Promise<TodoDocument[]> {
+    const { userId } = userFromToken;
+    let query: any = { userId };
+    console.log('query in findAll', filter);
+
+    if (filter?.status) {
+      const { status } = filter;
+      query.status = status;
+    }
+
+    return this.todoModel.find(query).exec();
   }
 
-  async create(createTodoInput: CreateTodoInput): Promise<TodoDocument> {
-    const { description, title, userId } = createTodoInput;
+  async create(
+    userFromToken: AccessTokenPayload,
+    createTodoInput: CreateTodoInput,
+  ): Promise<TodoDocument> {
+    const { email, userId } = userFromToken;
+    const { description, title } = createTodoInput;
     const user = await this.usersService.findOne(userId);
     if (!user) throw new BadRequestException('User not found');
 
@@ -52,8 +70,12 @@ export class TasksService {
     return createdTodo.save();
   }
 
-  async update(updateTodoInput: UpdateTodoInput) {
-    const { todoId, userId, title, description } = updateTodoInput;
+  async update(
+    userFromToken: AccessTokenPayload,
+    updateTodoInput: UpdateTodoInput,
+  ) {
+    const { userId } = userFromToken;
+    const { todoId, title, description } = updateTodoInput;
     const todo = await this.findOne(todoId);
 
     if (todo.userId.toString() !== userId)
@@ -65,8 +87,12 @@ export class TasksService {
     return todo.save();
   }
 
-  async updateToDone(updateToDoToDoneInput: UpdateTodoToDoneInput) {
-    const { todoId, userId } = updateToDoToDoneInput;
+  async updateToDone(
+    userFromToken: AccessTokenPayload,
+    updateToDoToDoneInput: UpdateTodoToDoneInput,
+  ) {
+    const { userId } = userFromToken;
+    const { todoId } = updateToDoToDoneInput;
     const todo = await this.findOne(todoId);
 
     if (todo.userId.toString() !== userId)
@@ -80,9 +106,12 @@ export class TasksService {
   }
 
   async updateToWillNotDo(
+    userFromToken: AccessTokenPayload,
+
     updateToDoToWillNotDo: UpdateTodoToWillNotDoInput,
   ): Promise<TodoDocument> {
-    const { todoId, userId } = updateToDoToWillNotDo;
+    const { userId } = userFromToken;
+    const { todoId } = updateToDoToWillNotDo;
     const todo = await this.findOne(todoId);
 
     if (todo.userId.toString() !== userId)
@@ -96,9 +125,11 @@ export class TasksService {
   }
 
   async updateToWillPending(
+    userFromToken: AccessTokenPayload,
     updateToDoToPendingInput: UpdateTodoToPendingInput,
   ): Promise<TodoDocument> {
-    const { todoId, userId } = updateToDoToPendingInput;
+    const { userId } = userFromToken;
+    const { todoId } = updateToDoToPendingInput;
     const todo = await this.findOne(todoId);
 
     if (todo.userId.toString() !== userId)
@@ -111,8 +142,12 @@ export class TasksService {
     return todo.save();
   }
 
-  async delete(deleteTodoInput: DeleteTodoInput): Promise<TodoDocument> {
-    const { todoId, userId } = deleteTodoInput;
+  async delete(
+    userFromToken: AccessTokenPayload,
+    deleteTodoInput: DeleteTodoInput,
+  ): Promise<TodoDocument> {
+    const { userId } = userFromToken;
+    const { todoId } = deleteTodoInput;
     const todo = await this.todoModel.findById(todoId);
 
     if (!todo) throw new NotFoundException('No such todo found');

@@ -1,4 +1,4 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
 import { User } from 'src/users/users.model';
 import { RegisterUserInput } from './dtos/register-user.input';
@@ -7,10 +7,21 @@ import { LoginUserResponse } from './responses/login_user.response';
 import { RegisterUserResponse } from './responses/register_user.response';
 import { CurrentUser } from 'src/commons/decorators/current_user/current_user.decorator';
 import { AccessTokenPayload } from 'src/commons/types/token-payload.types';
+import { LogoutUserResponse } from './responses/logout_user.response';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/commons/guards/jwt/jwt.guard';
 
 @Resolver(() => User)
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Query(() => User)
+  async getMe(@CurrentUser() user: AccessTokenPayload) {
+    console.log('user in getMe', user);
+    const result = await this.authService.getMe(user);
+    return result;
+  }
 
   @Mutation(() => RegisterUserResponse)
   async registerUser(@Args('input') registerUserInput: RegisterUserInput) {
@@ -27,10 +38,17 @@ export class AuthResolver {
     return result;
   }
 
-  @Mutation(() => LogoutResponse)
+  @Mutation(() => LoginUserResponse)
+  async refreshAccessToken(@Args('refreshToken') refreshToken: string) {
+    const result = await this.authService.refreshAccessToken(refreshToken);
+    return result;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => LogoutUserResponse)
   async logoutUser(@CurrentUser() user: AccessTokenPayload) {
     console.log('user in logout', user);
-    const result = await this.authService.logout(user);
-    return result;
+    const result = await this.authService.logoutUser(user);
+    return { message: result };
   }
 }

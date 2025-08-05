@@ -9,11 +9,6 @@ export class UpdateTodoInput {
   todoId: string;
 
   @Field()
-  @IsNotEmpty()
-  @IsMongoId()
-  userId: string;
-
-  @Field()
   @IsOptional()
   title: string;
 

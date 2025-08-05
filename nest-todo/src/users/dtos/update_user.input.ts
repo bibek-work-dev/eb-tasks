@@ -7,8 +7,4 @@ export class UpdateUserInput {
   @IsNotEmpty()
   @Length(3, 15)
   username: string;
-
-  @Field(() => String)
-  @IsNotEmpty()
-  userId: number;
 }

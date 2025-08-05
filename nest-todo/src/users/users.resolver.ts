@@ -2,11 +2,12 @@ import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { UsersService } from './users.service';
 import { User } from './users.model';
 import { ParseIntPipe, UseGuards } from '@nestjs/common';
-import { UpdateUserInput } from './dtos/update_user.dto';
-// import { JwtAuthGuard } from 'src/commons/guards/jwt/jwt.guard';
+import { UpdateUserInput } from './dtos/update_user.input';
 import { CurrentUser } from 'src/commons/decorators/current_user/current_user.decorator';
 import { AccessTokenPayload } from 'src/commons/types/token-payload.types';
 import { JwtAuthGuard } from 'src/commons/guards/jwt/jwt.guard';
+import { GetUserResponse } from './responses/get_user.response';
+import { GetUsersInput } from './dtos/get_user.input';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -18,9 +19,9 @@ export class UsersResolver {
     return result;
   }
 
-  @Query(() => [User])
-  async getUsers() {
-    const result = this.usersService.findAll();
+  @Query(() => GetUserResponse)
+  async getUsers(@Args('input') input: GetUsersInput) {
+    const result = this.usersService.findAll(input);
     return result;
   }
 
@@ -31,7 +32,7 @@ export class UsersResolver {
     @Args('input') updateUserInput: UpdateUserInput,
   ) {
     console.log('currentUser in resolver', currentUser);
-    const result = await this.usersService.update(updateUserInput);
+    const result = await this.usersService.update(currentUser, updateUserInput);
     return result;
   }
 

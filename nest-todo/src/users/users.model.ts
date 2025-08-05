@@ -11,6 +11,9 @@ export class User {
   @Field()
   email: string;
 
-  @Field()
+  // @Field()
   password: string;
+
+  @Field(() => Int)
+  loggedInTimes: number;
 }

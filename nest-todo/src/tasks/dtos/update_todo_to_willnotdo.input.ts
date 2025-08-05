@@ -6,10 +6,5 @@ export class UpdateTodoToWillNotDoInput {
   @Field()
   @IsMongoId()
   @IsNotEmpty()
-  userId: string;
-
-  @Field()
-  @IsMongoId()
-  @IsNotEmpty()
   todoId: string;
 }

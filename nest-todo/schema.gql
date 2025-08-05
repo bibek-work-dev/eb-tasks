@@ -6,7 +6,19 @@ type User {
   id: ID!
   username: String!
   email: String!
-  password: String!
+  loggedInTimes: Int!
+}
+
+type PaginateMeta {
+  page: Int!
+  limit: Int!
+  total: Int!
+  hasNextPage: Boolean!
+}
+
+type GetUserResponse {
+  users: [User!]!
+  paginate: PaginateMeta!
 }
 
 type Todo {
@@ -34,11 +46,25 @@ type RegisterUserResponse {
   user: User!
 }
 
+type LogoutUserResponse {
+  message: String!
+}
+
 type Query {
   getUser(input: String!): User!
-  getUsers: [User!]!
+  getUsers(input: GetUsersInput!): GetUserResponse!
   getTodo(id: String!): Todo!
-  getTodos: [Todo!]!
+  getTodos(input: GetTodoInput!): [Todo!]!
+  getMe: User!
+}
+
+input GetUsersInput {
+  page: Int! = 1
+  limit: Int! = 10
+}
+
+input GetTodoInput {
+  status: Status
 }
 
 type Mutation {
@@ -52,43 +78,38 @@ type Mutation {
   deleteTodo(input: DeleteTodoInput!): Todo!
   registerUser(input: RegisterUserInput!): RegisterUserResponse!
   loginUser(input: LoginUserInput!): LoginUserResponse!
+  refreshAccessToken(refreshToken: String!): LoginUserResponse!
+  logoutUser: LogoutUserResponse!
 }
 
 input UpdateUserInput {
   username: String!
-  userId: String!
 }
 
 input CreateTodoInput {
-  userId: String!
   title: String!
   description: String!
 }
 
 input UpdateTodoInput {
   todoId: ID!
-  userId: String!
   title: String!
   description: String!
 }
 
 input UpdateTodoToDoneInput {
-  userId: String!
   todoId: String!
 }
 
 input UpdateTodoToWillNotDoInput {
-  userId: String!
   todoId: String!
 }
 
 input UpdateTodoToPendingInput {
-  userId: String!
   todoId: String!
 }
 
 input DeleteTodoInput {
-  userId: String!
   todoId: String!
 }
 

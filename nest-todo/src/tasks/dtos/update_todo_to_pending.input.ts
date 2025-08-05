@@ -6,10 +6,5 @@ export class UpdateTodoToPendingInput {
   @Field()
   @IsMongoId()
   @IsNotEmpty()
-  userId: string;
-
-  @Field()
-  @IsMongoId()
-  @IsNotEmpty()
   todoId: string;
 }
